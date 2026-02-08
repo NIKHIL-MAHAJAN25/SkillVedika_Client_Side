@@ -47,7 +47,17 @@
         android:id="@+id/profile"
         android:name="com.nikhil.buyerapp.profile.CoreProfileFragment"
         android:label="profilefrag"
-        tools:layout="@layout/fragment_profile"/>
+        tools:layout="@layout/fragment_profile">
+        <action
+            android:id="@+id/action_prof_to_edit"
+            app:destination="@id/editprofile"/>
+    </fragment>
+    <fragment
+        android:id="@+id/editprofile"
+        android:name="com.nikhil.buyerapp.profile.EditProfileFragment"
+        android:label="editfrag"
+        tools:layout="@layout/fragment_edit_profile"/>
+
     <fragment
         android:id="@+id/addpost"
         android:name="com.nikhil.buyerapp.Orders.AddProjectFragment"

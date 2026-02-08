@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    >
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/bg"
+        tools:context=".experience.AddExperience">
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/hguide1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.02" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/vguide1"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.05" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/vguide2"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.95" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/hguide2"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.97" />
+        <ImageButton
+            android:id="@+id/imgbt"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:backgroundTint="@android:color/transparent"
+            android:src="@drawable/baseline_arrow_back_ios_24"
+            app:layout_constraintStart_toEndOf="@id/vguide1"
+            app:layout_constraintTop_toBottomOf="@+id/hguide1"
+            android:contentDescription="Back"/>
+
+
+        <TextView
+            android:id="@+id/name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:text="Name"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:textStyle="bold"
+
+            app:layout_constraintBottom_toTopOf="@+id/tvname"
+            app:layout_constraintStart_toEndOf="@id/vguide1"
+            app:layout_constraintTop_toBottomOf="@+id/imgbt" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tvname"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+
+            android:hint="Name"
+            android:textColorHint="#495048"
+            app:boxBackgroundColor="@color/bg"
+            app:boxCornerRadiusBottomEnd="10dp"
+            app:boxCornerRadiusBottomStart="10dp"
+            app:boxCornerRadiusTopEnd="10dp"
+            app:boxCornerRadiusTopStart="10dp"
+            app:boxStrokeColor="@color/darkgreen"
+            app:boxStrokeWidth="1dp"
+            app:hintTextColor="@color/darkgreen"
+
+            app:layout_constraintEnd_toStartOf="@+id/vguide2"
+            app:layout_constraintStart_toEndOf="@+id/vguide1"
+            app:layout_constraintTop_toBottomOf="@+id/name">
+
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                android:id="@+id/etname"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:inputType="text"
+                android:paddingVertical="10dp"
+                android:paddingStart="14dp"
+
+                android:textColor="#495048"
+                android:textSize="16sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/tvcomname"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Company Name"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@+id/etcomname"
+            app:layout_constraintStart_toEndOf="@id/vguide1"
+            app:layout_constraintTop_toBottomOf="@+id/tvname" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/etcomname"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:hint="Primary skill"
+            android:textColorHint="#495048"
+            app:boxBackgroundColor="@color/bg"
+            app:boxCornerRadiusBottomEnd="10dp"
+            app:boxCornerRadiusBottomStart="10dp"
+            app:boxCornerRadiusTopEnd="10dp"
+            app:boxCornerRadiusTopStart="10dp"
+            app:boxStrokeColor="@color/darkgreen"
+            app:boxStrokeWidth="1dp"
+
+            app:hintTextColor="@color/darkgreen"
+            app:layout_constraintEnd_toStartOf="@+id/vguide2"
+            app:layout_constraintStart_toEndOf="@+id/vguide1"
+            app:layout_constraintTop_toBottomOf="@+id/tvcomname">
+
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                android:id="@+id/etprim"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingVertical="10dp"
+                android:paddingStart="12dp"
+
+
+                />
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+
+
+
+        <TextView
+            android:id="@+id/phone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Phone Number"
+            android:textSize="18dp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toEndOf="@+id/vguide1"
+            app:layout_constraintTop_toBottomOf="@+id/etcomname" />
+
+        <LinearLayout
+            android:id="@+id/phoneContainer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            app:layout_constraintEnd_toStartOf="@+id/vguide2"
+            app:layout_constraintStart_toEndOf="@+id/vguide1"
+            app:layout_constraintTop_toBottomOf="@+id/phone">
+
+            <com.hbb20.CountryCodePicker
+                android:id="@+id/countryCodePicker"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:focusable="false"
+                android:layout_marginStart="8dp"
+                app:ccp_defaultNameCode="IN" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tvskill"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:hint="Phone Number"
+                app:hintTextColor="@color/darkgreen"
+                app:boxCornerRadiusTopEnd="10dp"
+                app:boxCornerRadiusTopStart="10dp"
+                app:boxCornerRadiusBottomStart="10dp"
+                app:boxCornerRadiusBottomEnd="10dp"
+                app:boxBackgroundMode="outline"
+                app:boxStrokeColor="@color/darkgreen">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etPhone"
+                    android:focusable="false"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="phone" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+
+        <TextView
+
+            android:id="@+id/email"
+
+            android:layout_width="wrap_content"
+
+            android:layout_height="wrap_content"
+
+            android:layout_marginTop="10dp"
+
+            android:text="Email"
+
+            android:textSize="18dp"
+
+            android:textStyle="bold"
+
+            app:layout_constraintStart_toEndOf="@+id/vguide1"
+
+
+            app:layout_constraintTop_toBottomOf="@+id/phoneContainer" />
+
+        <com.google.android.material.textfield.TextInputLayout
+
+            android:id="@+id/tvemail"
+
+            android:layout_width="0dp"
+
+            android:layout_height="wrap_content"
+
+            android:layout_marginTop="5dp"
+
+
+            android:hint="Email"
+
+            android:textColorHint="#495048"
+
+            android:weightSum="1"
+
+            app:boxBackgroundColor="@color/bg"
+
+            app:boxCornerRadiusBottomEnd="10dp"
+
+            app:boxCornerRadiusBottomStart="10dp"
+
+            app:boxCornerRadiusTopEnd="10dp"
+
+
+            app:boxCornerRadiusTopStart="10dp"
+            app:layout_constraintEnd_toStartOf="@id/vguide2"
+            app:boxStrokeColor="@color/darkgreen"
+
+            app:boxStrokeWidth="1dp"
+
+            app:hintTextColor="@color/darkgreen"
+
+            app:layout_constraintTop_toBottomOf="@+id/email"
+
+
+            app:layout_constraintStart_toEndOf="@+id/vguide1"
+
+            >
+
+
+            <com.google.android.material.textfield.TextInputEditText
+
+                android:id="@+id/etemail"
+
+                android:layout_width="match_parent"
+
+                android:focusable="false"
+                android:layout_height="wrap_content"
+
+                android:inputType="textEmailAddress"
+
+                android:paddingVertical="10dp"
+
+                android:textColor="#495048" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+
+        <TextView
+            android:id="@+id/tvdesc1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="Bio"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@+id/tvdesc2"
+            app:layout_constraintStart_toEndOf="@id/vguide1"
+            app:layout_constraintTop_toBottomOf="@+id/tvemail" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tvdesc2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:hint=""
+            android:textColorHint="#495048"
+
+            app:boxBackgroundColor="@color/bg"
+            app:boxCornerRadiusBottomEnd="10dp"
+            app:boxCornerRadiusBottomStart="10dp"
+            app:boxCornerRadiusTopEnd="10dp"
+            app:boxCornerRadiusTopStart="10dp"
+            app:boxStrokeColor="@color/darkgreen"
+
+            app:boxStrokeWidth="1dp"
+            app:hintTextColor="@color/darkgreen"
+
+
+            app:layout_constraintEnd_toStartOf="@+id/vguide2"
+            app:layout_constraintStart_toEndOf="@+id/vguide1"
+            app:layout_constraintTop_toBottomOf="@+id/tvdesc1">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etdesc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textMultiLine"
+                android:maxLength="100"
+                android:paddingVertical="30dp"
+                android:singleLine="false"
+                android:textColor="#495048" />
+        </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_save"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#698B6A"
+            android:padding="15dp"
+            android:text="Save"
+            android:textAllCaps="true"
+            android:textColor="@color/white"
+            app:cornerRadius="10dp"
+            android:layout_marginTop="16dp"
+            app:layout_constraintEnd_toStartOf="@+id/vguide2"
+            app:layout_constraintStart_toEndOf="@+id/vguide1"
+            app:layout_constraintTop_toBottomOf="@+id/tvdesc2" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>

@@ -1,7 +1,7 @@
 package com.nikhil.buyerapp.dataclasses
 
 data class Client(
-    val uid: String, 
+    val uid: String="",
     val name:String="",
     val companyName: String? = null,
     val paymentMethods: List<String> = emptyList(),
