@@ -6,6 +6,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestore
 import com.nikhil.buyerapp.R
 import com.nikhil.buyerapp.databinding.FragmentOrderBinding
 
@@ -22,6 +25,8 @@ private const val ARG_PARAM2 = "param2"
 class OrderFragment : Fragment() {
     private var _binding:FragmentOrderBinding?=null
     private val binding get()=_binding!!
+    val db= Firebase.firestore
+    var auth: FirebaseAuth = FirebaseAuth.getInstance()
     private var param1: String? = null
     private var param2: String? = null
 
