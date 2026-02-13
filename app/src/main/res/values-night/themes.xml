@@ -1,8 +1,11 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.BuyerApp" parent="Theme.Material3.Light.NoActionBar">
-        <item name="colorPrimary">@color/bg</item>
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <item name="colorPrimary">@color/darkgreen</item>
+        <item name="tabBackground">@color/bg</item>
+        <!-- Customize your light theme here. -->
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
     </style>
+    <style name="Theme.BuyerApp" parent="Base.Theme.BuyerApp" />
 </resources>

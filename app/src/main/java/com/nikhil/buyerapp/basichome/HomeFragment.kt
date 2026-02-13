@@ -32,7 +32,7 @@ import com.nikhil.buyerapp.utils.loge
 import com.nikhil.buyerapp.utils.snack
 import retrofit2.Call
 import retrofit2.Response
-
+import androidx.activity.OnBackPressedCallback
 
 
 
@@ -78,6 +78,27 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                // Check if the search results are currently visible
+                if (binding.rvSearchResults.visibility == View.VISIBLE) {
+
+                    // 1. Clear the search text (this triggers your TextWatcher to show home content)
+                    binding.etsearchbar.text?.clear()
+
+                    // 2. Hide the search UI manually just in case
+                    toggleSearch(false)
+
+                    // 3. Clear focus and hide keyboard
+                    hideKeyboard()
+
+                } else {
+                    // If we aren't searching, disable this callback and let the system handle the back press
+                    isEnabled = false
+                    requireActivity().onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
         setup()
         setupnews()
         loadinfo()
