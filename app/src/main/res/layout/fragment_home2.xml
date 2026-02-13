@@ -18,7 +18,8 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="100dp"> <androidx.constraintlayout.widget.Guideline
+            android:paddingBottom="100dp">
+            <androidx.constraintlayout.widget.Guideline
             android:id="@+id/hguide1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -57,10 +58,23 @@
                 app:layout_constraintEnd_toStartOf="@+id/vguide2">
 
                 <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etsearchbar"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:hint="Search Services" />
+                    android:inputType="textPersonName"
+                    android:imeOptions="actionSearch"
+                    android:hint="Search Freelancers" />
             </com.google.android.material.textfield.TextInputLayout>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvSearchResults"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:layout_marginTop="10dp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                app:layout_constraintTop_toBottomOf="@id/searchBar"
+                app:layout_constraintStart_toEndOf="@id/vguide1"
+                app:layout_constraintEnd_toStartOf="@id/vguide2" />
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvpps"
@@ -110,7 +124,11 @@
                 app:layout_constraintTop_toBottomOf="@+id/tvrecent"
                 android:layout_marginTop="10dp"
                 android:nestedScrollingEnabled="false" />
-
+            <androidx.constraintlayout.widget.Group
+                android:id="@+id/homeContentGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:constraint_referenced_ids="tvpps,recyclerservices,tvrecent,recyclernews" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.core.widget.NestedScrollView>

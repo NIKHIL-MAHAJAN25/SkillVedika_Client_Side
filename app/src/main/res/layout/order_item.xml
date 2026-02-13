@@ -32,8 +32,20 @@
             android:textSize="12sp"
             app:chipBackgroundColor="#E8F5E9"
             app:chipStrokeWidth="0dp"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/tvProjectTitle"
+            app:layout_constraintEnd_toStartOf="@+id/edit"
             app:layout_constraintTop_toTopOf="parent" />
+        <ImageButton
+            android:id="@+id/edit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/chipStatus"
+            app:layout_constraintTop_toTopOf="parent"
+            android:src="@drawable/dots"
+            android:layout_marginTop="-5dp"
+            android:backgroundTint="@android:color/transparent"/>
+
 
         <TextView
             android:id="@+id/tvDescription"

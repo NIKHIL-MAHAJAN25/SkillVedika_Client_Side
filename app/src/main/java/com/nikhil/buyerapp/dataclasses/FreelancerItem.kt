@@ -6,5 +6,5 @@ data class FreelancerItem(
     val primaryskill: String="",
     val rating:Double?=0.0,//basic
     val projectRate:Any?=null,//basic
-    val profileImageUrl: String=""
+    var profileImageUrl: String=""
 )

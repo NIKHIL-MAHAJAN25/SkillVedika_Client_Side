@@ -2,6 +2,7 @@ package com.nikhil.buyerapp.freelancesearch
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.R
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -21,6 +22,7 @@ class FreelanceAdapter(private val onclicked:(FreelancerItem)->Unit):ListAdapter
             binding.tvName.text=service.name
             Glide.with(itemView.context)
                 .load(service.profileImageUrl)
+
                 .centerCrop()
                 .into(binding.ivProfileImage)
             binding.tvPrimarySkill.text=service.primaryskill

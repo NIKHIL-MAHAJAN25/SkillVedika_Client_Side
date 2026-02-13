@@ -27,6 +27,7 @@ class OrderFragment : Fragment() {
     private val binding get()=_binding!!
     val db= Firebase.firestore
     var auth: FirebaseAuth = FirebaseAuth.getInstance()
+    val uid=auth.currentUser?.uid
     private var param1: String? = null
     private var param2: String? = null
 
@@ -48,6 +49,7 @@ class OrderFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         binding.addpost.setOnClickListener {
             findNavController().navigate(R.id.action_post)
         }
