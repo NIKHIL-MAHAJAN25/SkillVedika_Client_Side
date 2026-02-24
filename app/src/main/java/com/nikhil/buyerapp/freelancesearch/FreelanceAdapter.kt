@@ -2,7 +2,7 @@ package com.nikhil.buyerapp.freelancesearch
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.R
+
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
