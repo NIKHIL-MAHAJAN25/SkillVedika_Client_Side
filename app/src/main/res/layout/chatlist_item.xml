@@ -4,8 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:tools="http://schemas.android.com/tools"
+    android:padding="10dp"
 
-    app:cardCornerRadius="0dp"
     app:cardElevation="0dp"
     app:cardBackgroundColor="@color/bg"
     app:strokeColor="#E0E0E0"
@@ -13,6 +13,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:padding="20dp"
         android:paddingStart="10dp"
         android:background="@color/bg">
         <com.google.android.material.card.MaterialCardView
@@ -45,12 +46,38 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Nikhil Mahajn"
+                android:text="Nikhil Mahajan"
+                android:layout_marginStart="15dp"
+                android:layout_marginTop="5dp"
                 android:textColor="@color/black"
-                android:textStyle="bold"
+                android:textStyle="bold"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Last message sent"
+                android:layout_marginStart="15dp"
+                android:layout_marginTop="8dp"/>
+
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/timestamp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="12:00 AM"
+                android:layout_marginStart="15dp"
+                android:layout_marginTop="5dp"
+                android:textColor="@color/black"
+                />
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
 
-</com.google.android.material.card.MaterialCardView>>
+</com.google.android.material.card.MaterialCardView>
