@@ -1,14 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/bg"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".chatting.ChatInterface">
-
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:background="@color/darkgreen"
+        android:padding="15dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="wrap_content"
+        android:title="Chat">
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/const34"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
+            <!-- Profile Image -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/profileImageCard"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                app:cardCornerRadius="140dp"
+                app:cardElevation="2dp"
 
-</FrameLayout>
+                app:strokeColor="#E0E0E0"
+                app:strokeWidth="1.5dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:id="@+id/ivProfileImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    tools:src="@tools:sample/avatars" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Name -->
+            <TextView
+                android:id="@+id/tvName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="John Doe"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:textSize="26sp"
+                app:layout_constraintStart_toEndOf="@id/profileImageCard"
+                app:layout_constraintTop_toTopOf="@id/const34"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_marginStart="20dp"/>
+
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.appbar.MaterialToolbar>
+
+
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
