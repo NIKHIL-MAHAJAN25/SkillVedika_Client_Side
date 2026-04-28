@@ -12,7 +12,7 @@ import com.nikhil.buyerapp.dataclasses.FreelancerItem
 import com.nikhil.buyerapp.databinding.FreelanceritemBinding
 
 
-class FreelanceAdapter(private val onclicked:(FreelancerItem)->Unit):ListAdapter<FreelancerItem, FreelanceAdapter.ViewHolder>
+class FreelanceAdapter(private val onclicked:(FreelancerItem)->Unit,private val onContactClicked:(FreelancerItem)->Unit):ListAdapter<FreelancerItem, FreelanceAdapter.ViewHolder>
     (ServiceDiffCallback())
 {
     inner class ViewHolder(private val binding: FreelanceritemBinding): RecyclerView.ViewHolder(binding.root)
@@ -27,9 +27,12 @@ class FreelanceAdapter(private val onclicked:(FreelancerItem)->Unit):ListAdapter
                 .into(binding.ivProfileImage)
             binding.tvPrimarySkill.text=service.primaryskill
             binding.tvratings.text=service.rating.toString()
-            binding.tvProjectRate.text=service?.projectRate.toString()?: "Negotiable"
+            binding.tvProjectRate.text= service.projectRate.toString()?: "Negotiable"
             binding.root.setOnClickListener {
                 onclicked(service)
+            }
+            binding.btnContact.setOnClickListener {
+                onContactClicked(service)
             }
         }
     }

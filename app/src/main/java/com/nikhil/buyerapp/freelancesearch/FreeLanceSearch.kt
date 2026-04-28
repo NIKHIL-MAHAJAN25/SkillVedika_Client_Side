@@ -14,6 +14,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
 import com.nikhil.buyerapp.R
 import com.nikhil.buyerapp.databinding.FragmentFreeLanceSearchBinding
+import com.nikhil.buyerapp.dataclasses.Freelancer
 import com.nikhil.buyerapp.dataclasses.FreelancerItem
 
 // TODO: Rename parameter arguments, choose names that match
@@ -96,15 +97,27 @@ class FreeLanceSearch : Fragment() {
             }
     }
     fun setuprecycler(){
-        freeadapter= FreelanceAdapter { onclicked ->
+        freeadapter= FreelanceAdapter (
+            onclicked = { FreelancerItem ->
+
             val bundle= Bundle().apply {
-                putString("uid",onclicked.uid)
+                putString("uid",FreelancerItem.uid)
             }
+
             findNavController().navigate(
                 R.id.scaffold,bundle
             )
-
-        }
+                        },
+            onContactClicked = { FreelancerItem ->
+                val bundle = Bundle().apply {
+                    putString("uid", FreelancerItem.uid)
+                }
+                findNavController().navigate(
+                    R.id.chatlist,
+                    bundle
+                )
+            }
+        )
         binding.recyclerresults.apply {
             adapter=freeadapter
             layoutManager=LinearLayoutManager(requireContext())

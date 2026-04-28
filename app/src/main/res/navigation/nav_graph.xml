@@ -24,6 +24,12 @@
             app:destination="@+id/addpost"/>
     </fragment>
     <fragment
+        android:id="@+id/chatlist"
+        android:name="com.nikhil.buyerapp.chatting.ChatInterface"
+        android:label="chatinterface"
+        tools:layout="@layout/fragment_chat_interface"/>
+
+    <fragment
         android:id="@+id/scaffold"
         android:name="com.nikhil.buyerapp.freelanceprofileview.ScaffoldFragment"
         android:label="scaffoldfrag"

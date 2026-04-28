@@ -191,10 +191,27 @@ class HomeFragment : Fragment() {
         }
     }
     private fun setup(){
-        freeshow = FreelanceAdapter { freelancer ->
-            // Handle click on a freelancer from search results
-            // Example: navigate to their profile
-        }
+        freeshow = FreelanceAdapter (
+            onclicked = { FreelancerItem ->
+
+                val bundle= Bundle().apply {
+                    putString("uid",FreelancerItem.uid)
+                }
+
+                findNavController().navigate(
+                    R.id.scaffold,bundle
+                )
+            },
+            onContactClicked = { FreelancerItem ->
+                val bundle = Bundle().apply {
+                    putString("uid", FreelancerItem.uid)
+                }
+                findNavController().navigate(
+                    R.id.chatlist,
+                    bundle
+                )
+            }
+        )
         binding.rvSearchResults.apply {
             adapter = freeshow
             layoutManager = LinearLayoutManager(requireContext())
