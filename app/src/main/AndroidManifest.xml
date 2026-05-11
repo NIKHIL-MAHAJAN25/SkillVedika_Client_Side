@@ -19,6 +19,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BuyerApp"
         tools:targetApi="31">
+
         <activity
             android:name=".comprofile.EnterCode"
             android:exported="false" />

@@ -2,7 +2,7 @@ package com.nikhil.buyerapp.dataclasses
 
 import com.google.firebase.Timestamp
 
-data class Chats (
+data class Chat (
     val chatId:String="",
     val participants:List<String> = emptyList(),
     val lastMessage: String="",
