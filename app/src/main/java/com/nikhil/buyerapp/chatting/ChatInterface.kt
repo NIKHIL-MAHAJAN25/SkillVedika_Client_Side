@@ -35,6 +35,7 @@ class ChatInterface : Fragment() {
     lateinit var receiverUid:String
     lateinit var receiverName:String
     lateinit var receiverImage:String
+    lateinit var chatAdapter: ChatAdapter
     val db= Firebase.firestore
     var auth: FirebaseAuth = FirebaseAuth.getInstance()
     val uid = auth.currentUser?.uid
@@ -92,6 +93,9 @@ class ChatInterface : Fragment() {
         }
 
         setupinfo()
+        setupRecycler()
+        listenForMessages()
+
         binding.btnSend.setOnClickListener {
             if(!binding.etMessage.text.isNullOrBlank() || !binding.etMessage.text.trim().isEmpty()) {
                 val text = binding.etMessage.text.trim().toString()
@@ -101,6 +105,53 @@ class ChatInterface : Fragment() {
                 snack("Message is Empty")
             }
         }
+    }
+    private fun setupRecycler() {
+
+        chatAdapter = ChatAdapter()
+
+        binding.chatRecyclerView.apply {
+
+            adapter = chatAdapter
+
+            layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext()).apply {
+
+                stackFromEnd = true
+            }
+        }
+    }
+    private fun listenForMessages() {
+
+        val currentUid = auth.currentUser?.uid ?: return
+
+        val chatId = if (currentUid < receiverUid) {
+            "${currentUid}_${receiverUid}"
+        } else {
+            "${receiverUid}_${currentUid}"
+        }
+
+        db.collection("Chat")
+            .document(chatId)
+            .collection("messages")
+            .orderBy("timestamp")
+            .addSnapshotListener { value, error ->
+
+                if (error != null) {
+
+                    snack("Failed to load messages")
+                    return@addSnapshotListener
+                }
+
+                val messages = value?.documents?.mapNotNull {
+
+                    it.toObject(Message::class.java)
+
+                } ?: emptyList()
+
+                chatAdapter.submitList(messages)
+
+                binding.chatRecyclerView.scrollToPosition(messages.size - 1)
+            }
     }
     private fun setupinfo()
     {
