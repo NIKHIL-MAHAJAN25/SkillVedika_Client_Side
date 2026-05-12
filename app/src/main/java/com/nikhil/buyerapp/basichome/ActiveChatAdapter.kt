@@ -13,14 +13,21 @@ import com.nikhil.buyerapp.databinding.ChatlistItemBinding
 import com.nikhil.buyerapp.dataclasses.Chat
 
 class ActiveChatsAdapter(
-    private val onChatClicked: (Chat) -> Unit
+    private val onChatClicked: (
+        Chat,
+        String,
+        String,
+        String
+    ) -> Unit
 ) : ListAdapter<Chat, ActiveChatsAdapter.ChatViewHolder>(DiffCallback()) {
 
     private var userInfoMap: Map<String, Pair<String, String>> = emptyMap()
 
     fun setUserInfo(map: Map<String, Pair<String, String>>) {
+
         userInfoMap = map
         notifyDataSetChanged()
+
     }
 
     inner class ChatViewHolder(
@@ -37,8 +44,8 @@ class ActiveChatsAdapter(
 
             val userData = userInfoMap[otherUserId]
 
-            // Prevent half-loaded UI flicker
-            if (userData == null) {
+            // Prevent flicker
+            if (userData == null || otherUserId == null) {
 
                 binding.root.visibility = View.INVISIBLE
                 return
@@ -62,12 +69,21 @@ class ActiveChatsAdapter(
                 .into(binding.ivProfileImage)
 
             binding.root.setOnClickListener {
-                onChatClicked(chat)
+
+                onChatClicked(
+                    chat,
+                    otherUserId,
+                    userData.first,
+                    userData.second
+                )
             }
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChatViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int
+    ): ChatViewHolder {
 
         val binding = ChatlistItemBinding.inflate(
             LayoutInflater.from(parent.context),
@@ -85,14 +101,22 @@ class ActiveChatsAdapter(
 
     class DiffCallback : DiffUtil.ItemCallback<Chat>() {
 
-        override fun areItemsTheSame(oldItem: Chat, newItem: Chat): Boolean {
+        override fun areItemsTheSame(
+            oldItem: Chat,
+            newItem: Chat
+        ): Boolean {
 
             return oldItem.chatId == newItem.chatId
         }
 
-        override fun areContentsTheSame(oldItem: Chat, newItem: Chat): Boolean {
+        override fun areContentsTheSame(
+            oldItem: Chat,
+            newItem: Chat
+        ): Boolean {
 
-            return oldItem == newItem
+            return oldItem.lastMessage == newItem.lastMessage &&
+
+                    oldItem.lastSenderId == newItem.lastSenderId
         }
     }
 }
