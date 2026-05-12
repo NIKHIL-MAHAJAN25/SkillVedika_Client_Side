@@ -66,7 +66,7 @@ class ChatInterface : Fragment() {
         windowController.isAppearanceLightStatusBars = false
 
         // 3. Pad the toolbar by status bar height so content doesn't go under icons
-        ViewCompat.setOnApplyWindowInsetsListener(binding.toolbar) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.topHeader) { v, insets ->
             val statusBarHeight = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
             // Explicitly set bottom padding to 0 so we don't accidentally inherit extra space
             v.updatePadding(top = statusBarHeight, bottom = 0)

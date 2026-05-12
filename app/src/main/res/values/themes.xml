@@ -3,7 +3,7 @@
     <style name="Base.Theme.BuyerApp" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/darkgreen</item>
         <item name="tabBackground">@color/bg</item>
-        <item name="android:statusBarColor">@color/darkgreen</item>
+
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <!-- Customize your light theme here. -->
