@@ -74,6 +74,7 @@ class FreeLanceSearch : Fragment() {
                 val tempList = mutableListOf<FreelancerItem>()
 
                 for (doc in snapshots.documents) {
+                    if (doc.id == auth.currentUser?.uid) continue
                     val freelancer = doc.toObject(FreelancerItem::class.java)
                         ?.copy(uid = doc.id) ?: continue
 
@@ -110,7 +111,9 @@ class FreeLanceSearch : Fragment() {
                         },
             onContactClicked = { FreelancerItem ->
                 val bundle = Bundle().apply {
-                    putString("uid", FreelancerItem.uid)
+                    putString("receiverUid", FreelancerItem.uid)
+                    putString("receiverName", FreelancerItem.name)
+                    putString("receiverImage", FreelancerItem.profileImageUrl)
                 }
                 findNavController().navigate(
                     R.id.chatlist,

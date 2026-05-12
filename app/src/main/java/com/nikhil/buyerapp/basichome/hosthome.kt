@@ -34,7 +34,7 @@ class hosthome : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         PDFBoxResourceLoader.init(applicationContext)
-        enableEdgeToEdge()
+
         binding=ActivityHosthomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
         ViewCompat.setOnApplyWindowInsetsListener(binding.host) { view, insets ->
@@ -44,10 +44,10 @@ class hosthome : AppCompatActivity() {
                 statusBars.left,
                 statusBars.top,
                 statusBars.right,
-                statusBars.bottom // ❌ IMPORTANT: NO bottom padding
+                0
             )
 
-            WindowInsetsCompat.CONSUMED
+            insets
         }
 
 

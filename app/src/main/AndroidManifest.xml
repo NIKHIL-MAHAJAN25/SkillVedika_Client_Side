@@ -23,16 +23,12 @@
         <activity
             android:name=".comprofile.EnterCode"
             android:exported="false" />
-        <activity
-            android:name=".basichome.homescreen"
-            android:exported="false"
-            android:label="@string/title_activity_homescreen" />
+
         <activity
             android:name=".basichome.hosthome"
+            android:windowSoftInputMode="adjustResize"
             android:exported="false" />
-        <activity
-            android:name=".comprofile.ProfileScreen3"
-            android:exported="false" />
+
         <activity
             android:name=".comprofile.ProfileScreen2"
             android:exported="false" />
@@ -50,6 +46,7 @@
             android:exported="false" />
         <activity
             android:name=".MainActivity"
+            android:windowSoftInputMode="adjustResize"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
