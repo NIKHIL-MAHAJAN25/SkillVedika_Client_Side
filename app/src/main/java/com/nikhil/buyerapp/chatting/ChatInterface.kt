@@ -11,9 +11,16 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.updatePadding
 import com.bumptech.glide.Glide
+import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestore
 import com.nikhil.buyerapp.R
 import com.nikhil.buyerapp.databinding.FragmentChatInterfaceBinding
 import com.nikhil.buyerapp.databinding.FragmentFreeLanceSearchBinding
+import com.nikhil.buyerapp.dataclasses.Chat
+import com.nikhil.buyerapp.dataclasses.Message
+import com.nikhil.buyerapp.utils.snack
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -28,6 +35,9 @@ class ChatInterface : Fragment() {
     lateinit var receiverUid:String
     lateinit var receiverName:String
     lateinit var receiverImage:String
+    val db= Firebase.firestore
+    var auth: FirebaseAuth = FirebaseAuth.getInstance()
+    val uid = auth.currentUser?.uid
     private var _binding: FragmentChatInterfaceBinding?=null
     val binding get() = _binding!!
 
@@ -82,6 +92,15 @@ class ChatInterface : Fragment() {
         }
 
         setupinfo()
+        binding.btnSend.setOnClickListener {
+            if(!binding.etMessage.text.isNullOrBlank() || !binding.etMessage.text.trim().isEmpty()) {
+                val text = binding.etMessage.text.trim().toString()
+                sendMessage(text)
+
+            }else{
+                snack("Message is Empty")
+            }
+        }
     }
     private fun setupinfo()
     {
@@ -92,6 +111,54 @@ class ChatInterface : Fragment() {
             .into(binding.ivProfileImage)
 
     }
+    private fun sendMessage(text: String)
+
+    {
+        val currentUid = auth.currentUser?.uid ?: return
+        // deterministic chat id
+        val chatId = if (currentUid < receiverUid) {
+            "${currentUid}_${receiverUid}"
+        } else {
+            "${receiverUid}_${currentUid}"
+        }
+        val chatref = db.collection("Chat").document(chatId)
+        val messageref=chatref.collection("messages").document()
+        val message = Message(
+            messageId = messageref.id,
+            senderId = currentUid,
+            text = text,
+            timestamp = com.google.firebase.Timestamp.now()
+
+        )
+        val chat = Chat(
+            chatId = chatId,
+            participants = listOf(currentUid, receiverUid),
+            lastMessage = text,
+            lastMessageTime = com.google.firebase.Timestamp.now(),
+            lastSenderId = currentUid,
+            unreadCount = mapOf(
+                currentUid to 0,
+                receiverUid to 1
+            )
+            )
+        chatref.set(chat).continueWithTask {
+                messageref.set(message)
+            }
+
+            .addOnSuccessListener {
+
+                binding.etMessage.text?.clear()
+
+            }
+
+            .addOnFailureListener {
+
+                snack("Failed to send message")
+
+            }
+    }
+
+
 
 
     companion object {
