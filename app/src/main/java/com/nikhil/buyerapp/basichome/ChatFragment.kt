@@ -5,7 +5,17 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.firestore
 import com.nikhil.buyerapp.R
+import com.nikhil.buyerapp.chatting.ActiveChatsAdapter
+import com.nikhil.buyerapp.databinding.FragmentChatBinding
+import com.nikhil.buyerapp.databinding.FragmentChatInterfaceBinding
+import com.nikhil.buyerapp.dataclasses.Chat
+import kotlin.jvm.java
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -21,6 +31,9 @@ class ChatFragment : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
+    lateinit var adapter: ActiveChatsAdapter
+    private var _binding: FragmentChatBinding?=null
+    val binding get() = _binding!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,7 +48,69 @@ class ChatFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_chat, container, false)
+        _binding= FragmentChatBinding.inflate(inflater,container,false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupRecycler()
+        loadChats()
+    }
+    private fun setupRecycler() {
+
+        adapter = ActiveChatsAdapter {
+
+        }
+
+        binding.chatlist.adapter = adapter
+
+        binding.chatlist.layoutManager =
+            LinearLayoutManager(requireContext())
+    }
+    private fun loadChats() {
+
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        Firebase.firestore.collection("Chat")
+            .whereArrayContains("participants", uid).orderBy("lastMessageTime", Query.Direction.DESCENDING)
+            .addSnapshotListener { value, error ->
+
+                if (error != null) return@addSnapshotListener
+
+                val chats = value?.documents?.mapNotNull {
+
+                    it.toObject(Chat::class.java)
+
+                } ?: emptyList()
+
+                adapter.submitList(chats)
+
+                val userMap = mutableMapOf<String, Pair<String, String>>()
+
+                chats.forEach { chat ->
+
+                    val otherUserId = chat.participants.firstOrNull { it != uid }
+
+                    if (otherUserId != null) {
+
+                        Firebase.firestore.collection("Users")
+                            .document(otherUserId)
+                            .get()
+                            .addOnSuccessListener { userDoc ->
+
+                                val name = userDoc.getString("fullName") ?: ""
+
+                                val image =
+                                    userDoc.getString("profilePictureUrl") ?: ""
+
+                                userMap[otherUserId] = Pair(name, image)
+
+                                adapter.setUserInfo(userMap)
+                            }
+                    }
+                }
+            }
     }
 
     companion object {
