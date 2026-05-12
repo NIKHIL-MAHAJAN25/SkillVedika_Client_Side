@@ -6,8 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/chat_bg"
-
-
     tools:context=".chatting.ChatInterface">
 
     <com.google.android.material.appbar.MaterialToolbar
@@ -15,8 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/darkgreen"
-        android:paddingTop="4dp"
-        android:paddingBottom="4dp"
+        android:minHeight="?attr/actionBarSize"
         app:contentInsetStart="0dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -27,14 +24,18 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
+            android:baselineAligned="false"
             android:paddingStart="4dp"
-            android:paddingEnd="12dp">
+            android:paddingEnd="12dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp">
 
             <ImageButton
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/baseline_arrow_back_ios_24"
+                android:scaleType="center"
                 app:tint="@android:color/white" />
 
             <com.google.android.material.card.MaterialCardView
@@ -103,6 +104,7 @@
                 android:layout_height="wrap_content"
                 android:background="@android:color/transparent"
                 android:hint="Message"
+                android:layout_marginBottom="8dp"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:paddingTop="12dp"
@@ -116,11 +118,12 @@
             android:id="@+id/btnSend"
             android:layout_width="48dp"
             android:layout_height="48dp"
+
             android:background="@drawable/circle_chat"
             android:src="@drawable/baseline_send_24"
             android:padding="12dp"
             app:tint="@android:color/white"
-            android:layout_marginBottom="2dp" />
+            android:layout_marginBottom="5dp" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

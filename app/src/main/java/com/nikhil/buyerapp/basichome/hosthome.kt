@@ -34,7 +34,8 @@ class hosthome : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         PDFBoxResourceLoader.init(applicationContext)
-
+        enableEdgeToEdge()
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
         binding=ActivityHosthomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
         ViewCompat.setOnApplyWindowInsetsListener(binding.host) { view, insets ->
