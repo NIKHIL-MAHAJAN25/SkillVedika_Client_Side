@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
@@ -34,6 +35,18 @@ class CoreProfileFragment : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
+    private val paymentMethods = listOf(
+        "UPI",
+        "PayPal",
+        "Bank Transfer",
+        "Credit Card",
+        "Debit Card",
+        "Crypto",
+        "Net Banking",
+        "Cash"
+    )
+
+    private val selectedPayments = mutableListOf<String>()
     private  var _binding: FragmentProfileBinding?=null
     private val binding get()=_binding!!
     private val auth: FirebaseAuth= FirebaseAuth.getInstance()
@@ -66,6 +79,10 @@ class CoreProfileFragment : Fragment() {
         binding.btnEditProfile.setOnClickListener {
             findNavController().navigate(R.id.action_prof_to_edit)
         }
+        binding.btnManagePayment.setOnClickListener {
+
+            showPaymentMethodsDialog()
+        }
         binding.btnLogout.setOnClickListener {
             FirebaseAuth.getInstance().signOut()
             val intent= Intent(requireContext(), LoginActivity::class.java)
@@ -74,6 +91,91 @@ class CoreProfileFragment : Fragment() {
             requireActivity().finish()
 
 
+        }
+    }
+    private fun showPaymentMethodsDialog() {
+
+        val checkedItems = BooleanArray(paymentMethods.size)
+
+        // restore already selected methods
+        paymentMethods.forEachIndexed { index, method ->
+
+            checkedItems[index] = selectedPayments.contains(method)
+        }
+
+        MaterialAlertDialogBuilder(
+            requireContext(),
+            R.style.CustomMaterialDialog
+        )
+            .setTitle("Select Payment Methods")
+
+            .setMultiChoiceItems(
+                paymentMethods.toTypedArray(),
+                checkedItems
+            ) { _, which, isChecked ->
+
+                val selectedMethod = paymentMethods[which]
+
+                if (isChecked) {
+
+                    selectedPayments.add(selectedMethod)
+
+                } else {
+
+                    selectedPayments.remove(selectedMethod)
+                }
+            }
+
+            .setPositiveButton("Save") { _, _ ->
+
+                updatePaymentChips()
+
+                savePaymentMethodsToFirestore()
+            }
+
+            .setNegativeButton("Cancel", null)
+
+            .show()
+    }
+    private fun savePaymentMethodsToFirestore() {
+
+        val currentUid = uid ?: return
+
+        db.collection("Client")
+            .document(currentUid)
+            .update(
+                "paymentMethods",
+                selectedPayments
+            )
+    }
+    private fun updatePaymentChips() {
+
+        binding.chipPaymentMethods.removeAllViews()
+
+        if (selectedPayments.isEmpty()) {
+
+            binding.emptyPaymentState.visibility = View.VISIBLE
+
+            return
+        }
+
+        binding.emptyPaymentState.visibility = View.GONE
+
+        selectedPayments.forEach { method ->
+
+            val chip = com.google.android.material.chip.Chip(
+                requireContext(),
+                null,
+                R.style.CustomChipStyle
+            )
+
+            chip.text = method
+
+            chip.isCloseIconVisible = false
+
+
+
+            binding.chipPaymentMethods.addView(chip)
         }
     }
     private fun loadotherinfo() {
@@ -90,6 +192,13 @@ class CoreProfileFragment : Fragment() {
                     if (snapshot != null && snapshot.exists()) {
                         val user = snapshot.toObject<Client>()
                         b.tvCompanyName.setText(user?.companyName)
+                        selectedPayments.clear()
+
+                        selectedPayments.addAll(
+                            user?.paymentMethods ?: emptyList()
+                        )
+
+                        updatePaymentChips()
                         loge("$user.name")
                         logd("$user.companyName")
                     }

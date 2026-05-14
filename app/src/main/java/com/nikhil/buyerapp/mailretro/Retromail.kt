@@ -8,7 +8,7 @@ import retrofit2.create
 import java.util.concurrent.TimeUnit
 
 object Retromail {
-    private const val base_url="https://skill-vedikaser-dgtm.vercel.app/"
+    private const val base_url="https://skill-vedikaser.vercel.app/"
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }

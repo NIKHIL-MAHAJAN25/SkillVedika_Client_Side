@@ -31,6 +31,7 @@ import com.nikhil.buyerapp.utils.logd
 import com.nikhil.buyerapp.utils.loge
 import com.nikhil.buyerapp.utils.snack
 import retrofit2.Call
+import com.nikhil.buyerapp.news.Result
 import retrofit2.Response
 import androidx.activity.OnBackPressedCallback
 
@@ -47,8 +48,10 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class HomeFragment : Fragment() {
+
     // TODO: Rename and change types of parameters
     private var _binding:FragmentHome2Binding?=null
+
 
     private val binding get() =_binding!!
     lateinit var serviceAdapter: ServiceAdapter
@@ -138,40 +141,78 @@ class HomeFragment : Fragment() {
 
 
     }
-    private fun fetchnews()
-    {
-        val apikey="${BuildConfig.NEWS_KEY}"
-        val query="Artificial Intelligence, Machine learning"
+    private fun fetchnews() {
 
-        RetroNews.instance.getnews(apikey,query,size=8).enqueue(object : Callback<NewsResponse>{
-            override fun onResponse(call: Call<NewsResponse>, response: Response<NewsResponse>) {
-               if(_binding==null) return
-                if(response.isSuccessful)
-                {
-                    val rawList = response.body()?.results
+        // cache valid for 10 minutes
+        val cacheDuration = 10 * 60 * 1000
 
-                    // --- THE BOUNCER (Filtering Logic) ---
-                    val cleanList = rawList?.filter { article ->
-                        // Rule: "You can only enter if you have a non-empty Image URL"
-                        !article.image_url.isNullOrBlank()
-                    }
+        // if cache exists and still fresh
+        if (
+            cachedNews != null &&
+            System.currentTimeMillis() - lastFetchTime < cacheDuration
+        ) {
 
-                    if(!cleanList.isNullOrEmpty())
-                    {
-                        newsAdapter.submitList(cleanList)
-                    }else{
-                        loge("News error:${response.code()}")
+            newsAdapter.submitList(cachedNews)
+
+            logd("Loaded news from cache")
+
+            return
+        }
+
+        val apikey = BuildConfig.NEWS_KEY
+
+        val query = "Artificial Intelligence, Machine learning"
+
+        RetroNews.instance
+            .getnews(apikey, query, size = 8)
+
+            .enqueue(object : Callback<NewsResponse> {
+
+                override fun onResponse(
+                    call: Call<NewsResponse>,
+                    response: Response<NewsResponse>
+                ) {
+
+                    if (_binding == null) return
+
+                    if (response.isSuccessful) {
+
+                        val rawList = response.body()?.results
+
+                        val cleanList = rawList?.filter {
+
+                            !it.image_url.isNullOrBlank()
+                        }
+
+                        if (!cleanList.isNullOrEmpty()) {
+
+                            // SAVE CACHE
+                            cachedNews = cleanList
+
+                            lastFetchTime =
+                                System.currentTimeMillis()
+
+                            newsAdapter.submitList(cleanList)
+
+                        } else {
+
+                            loge("News error: ${response.code()}")
+                        }
                     }
                 }
-            }
 
-            override fun onFailure(call: Call<NewsResponse>, t: Throwable) {
-                if (_binding == null) return
-                loge("News API Failed", t)
-                snack("Failed to load news")
-            }
+                override fun onFailure(
+                    call: Call<NewsResponse>,
+                    t: Throwable
+                ) {
 
-        })
+                    if (_binding == null) return
+
+                    loge("News API Failed", t)
+
+                    snack("Failed to load news")
+                }
+            })
     }
     private fun setupnews()
     {
@@ -266,6 +307,9 @@ class HomeFragment : Fragment() {
          * @return A new instance of fragment HomeFragment.
          */
         // TODO: Rename and change types and number of parameters
+        private var cachedNews: List<Result>? = null
+
+        private var lastFetchTime = 0L
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
             HomeFragment().apply {

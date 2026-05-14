@@ -15,12 +15,39 @@
         <item name="android:textCursorDrawable">@null</item>
         <item name="colorControlActivated">@android:color/black</item>
     </style>
+    <style name="MyCustomChip2" parent="Widget.MaterialComponents.Chip.Entry">
+    <item name="chipBackgroundColor">@color/bgdark</item>
+    <item name="chipStrokeColor">#698B6A</item>
+    <item name="chipStrokeWidth">0dp</item>
+    <item name="chipCornerRadius">40dp</item>
+    <item name="android:textColor">@color/black</item>
+    </style>
     <style name="MyCustomChip" parent="Widget.Material3.Chip.Assist">
         <item name="chipBackgroundColor">@color/bgdark</item>
         <item name="chipStrokeColor">#698B6A</item>
         <item name="chipStrokeWidth">0dp</item>
         <item name="chipCornerRadius">40dp</item>
         <item name="android:textColor">@color/black</item>
+
+
+    </style>
+
+    <style name="CustomMaterialDialog"
+        parent="ThemeOverlay.Material3.MaterialAlertDialog">
+
+        <item name="colorSurface">@color/bgdark</item>
+
+
+
+
+
+    </style>
+
+    <style name="DialogTitleStyle"
+        parent="TextAppearance.Material3.TitleLarge">
+
+        <item name="android:textStyle">bold</item>
+
 
 
     </style>
