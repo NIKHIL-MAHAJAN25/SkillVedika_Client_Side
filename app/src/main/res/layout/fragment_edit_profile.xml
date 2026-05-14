@@ -116,7 +116,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
-            android:hint="Primary skill"
+            android:hint="Company Name"
             android:textColorHint="#495048"
             app:boxBackgroundColor="@color/bg"
             app:boxCornerRadiusBottomEnd="10dp"

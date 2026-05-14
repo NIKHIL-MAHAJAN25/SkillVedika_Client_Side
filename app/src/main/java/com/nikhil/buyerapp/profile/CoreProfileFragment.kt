@@ -17,6 +17,8 @@ import com.nikhil.buyerapp.R
 import com.nikhil.buyerapp.databinding.FragmentProfileBinding
 import com.nikhil.buyerapp.dataclasses.Client
 import com.nikhil.buyerapp.dataclasses.User
+import com.nikhil.buyerapp.utils.logd
+import com.nikhil.buyerapp.utils.loge
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -87,8 +89,9 @@ class CoreProfileFragment : Fragment() {
                     }
                     if (snapshot != null && snapshot.exists()) {
                         val user = snapshot.toObject<Client>()
-                        b.tvName.setText(user?.name)
                         b.tvCompanyName.setText(user?.companyName)
+                        loge("$user.name")
+                        logd("$user.companyName")
                     }
                 }
         }
@@ -111,6 +114,7 @@ class CoreProfileFragment : Fragment() {
                             .load(user?.profilePictureUrl)
                             .error(R.drawable.ic_launcher_background)
                             .into(binding.profileImage)
+                        b.tvName.setText(user?.fullName)
 
 
 

@@ -1,60 +1,152 @@
 package com.nikhil.buyerapp.profile
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.nikhil.buyerapp.R
+import androidx.fragment.app.Fragment
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestore
+import com.nikhil.buyerapp.databinding.FragmentEditProfileBinding
+import com.nikhil.buyerapp.dataclasses.Client
+import com.nikhil.buyerapp.dataclasses.User
+import com.nikhil.buyerapp.utils.snack
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [EditProfileFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class EditProfileFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+    private var _binding: FragmentEditProfileBinding? = null
+
+    private val binding get() = _binding!!
+
+    private val db = Firebase.firestore
+
+    private val auth = FirebaseAuth.getInstance()
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+
+        _binding =
+            FragmentEditProfileBinding.inflate(
+                inflater,
+                container,
+                false
+            )
+
+        return binding.root
+    }
+
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?
+    ) {
+        super.onViewCreated(view, savedInstanceState)
+
+        loadProfile()
+
+        binding.btnSave.setOnClickListener {
+
+            saveProfile()
+        }
+
+        binding.imgbt.setOnClickListener {
+
+            requireActivity().onBackPressedDispatcher.onBackPressed()
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_edit_profile, container, false)
+    private fun loadProfile() {
+
+        val uid = auth.currentUser?.uid ?: return
+
+        // USERS COLLECTION
+        db.collection("Users")
+            .document(uid)
+            .get()
+            .addOnSuccessListener { document ->
+
+                val user =
+                    document.toObject(User::class.java)
+
+                binding.etname.setText(
+                    user?.fullName ?: ""
+                )
+
+                binding.etPhone.setText(
+                    user?.phoneNumber ?: ""
+                )
+
+                binding.etemail.setText(
+                    user?.email ?: ""
+                )
+
+                binding.etdesc.setText(
+                    user?.bio ?: ""
+                )
+            }
+
+        // CLIENT COLLECTION
+        db.collection("Client")
+            .document(uid)
+            .get()
+            .addOnSuccessListener { document ->
+
+                val client =
+                    document.toObject(Client::class.java)
+
+                binding.etprim.setText(
+                    client?.companyName ?: ""
+                )
+            }
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment EditProfileFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            EditProfileFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+    private fun saveProfile() {
+
+        val uid = auth.currentUser?.uid ?: return
+
+        val fullName =
+            binding.etname.text.toString().trim()
+
+        val bio =
+            binding.etdesc.text.toString().trim()
+
+        val companyName =
+            binding.etprim.text.toString().trim()
+
+        // UPDATE USERS COLLECTION
+        db.collection("Users")
+            .document(uid)
+            .update(
+                mapOf(
+                    "fullName" to fullName,
+                    "bio" to bio
+                )
+            )
+
+        // UPDATE CLIENT COLLECTION
+        db.collection("Client")
+            .document(uid)
+            .update(
+                mapOf(
+                    "companyName" to companyName
+                )
+            )
+            .addOnSuccessListener {
+
+                snack("Profile Updated")
             }
+            .addOnFailureListener {
+
+                snack("Failed to update profile")
+            }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+
+        _binding = null
     }
 }

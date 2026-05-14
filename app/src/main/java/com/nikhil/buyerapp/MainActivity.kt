@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        binding=ActivityMainBinding.inflate(layoutInflater)
+        binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -52,13 +52,50 @@ class MainActivity : AppCompatActivity() {
         binding.lottiee.addLottieOnCompositionLoadedListener { composition ->
             binding.lottiee.playAnimation()
 
-
             binding.tvtitlee.visibility = View.VISIBLE
             binding.tvtitlee2.visibility = View.VISIBLE
+
             binding.tvtitlee.alpha = 0f
             binding.tvtitlee2.alpha = 0f
-            binding.tvtitlee.animate().alpha(1f).setDuration(300).start()
-            binding.tvtitlee2.animate().alpha(1f).setDuration(500).start()
+
+            binding.tvtitlee.animate()
+                .alpha(1f)
+                .setDuration(300)
+                .start()
+
+            binding.tvtitlee2.animate()
+                .alpha(1f)
+                .setDuration(500)
+                .start()
+
+            lifecycleScope.launch {
+
+                delay(3500L)
+
+                val user = auth.currentUser
+
+                // User not logged in
+                if (user == null) {
+
+                    navigateTo(SignupActivity::class.java)
+
+                    return@launch
+                }
+
+                // Check profile completion
+                val profComplete = check(user.uid)
+
+                val destination =
+                    if (profComplete) {
+                        hosthome::class.java
+                    } else {
+                        SignupActivity::class.java
+                    }
+
+                navigateTo(destination)
+            }
+
+
 
 //            val duration = (composition?.duration ?: 3000L).toFloat()/(binding.lottiee.speed)
 //
@@ -71,29 +108,29 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    override fun onStart() {
-        super.onStart()
-
-        // Get current user (this will be persisted by Firebase if everything is set up correctly)
-        val user = auth.currentUser
-
-        // If user is null -> not signed in -> go to SignUpActivity
-        if (user == null) {
-            navigateTo(SignupActivity::class.java)
-            return
-        }
-
-        // If user exists, check profile completion in Firestore and route accordingly
-        lifecycleScope.launch {
-            val uid = user.uid
-            val profComplete = check(uid) // returns true/false (never null)
-            val destClass = if (profComplete) hosthome::class.java else SignupActivity::class.java
-
-            // Optional splash delay for animation; adjust or remove as desired
-            delay(3500L)
-            navigateTo(destClass)
-        }
-    }
+//    override fun onStart() {
+//        super.onStart()
+//
+//        // Get current user (this will be persisted by Firebase if everything is set up correctly)
+//        val user = auth.currentUser
+//
+//        // If user is null -> not signed in -> go to SignUpActivity
+//        if (user == null) {
+//            navigateTo(SignupActivity::class.java)
+//            return
+//        }
+//
+//        // If user exists, check profile completion in Firestore and route accordingly
+//        lifecycleScope.launch {
+//            val uid = user.uid
+//            val profComplete = check(uid) // returns true/false (never null)
+//            val destClass = if (profComplete) hosthome::class.java else SignupActivity::class.java
+//
+//            // Optional splash delay for animation; adjust or remove as desired
+//            delay(3500L)
+//            navigateTo(destClass)
+//        }
+//    }
     private fun navigateTo(destClass: Class<*>) {
         val intent = Intent(this, destClass)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
