@@ -75,60 +75,53 @@ class ChatFragment : Fragment() {
     }
 
     private fun loadChats() {
-
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
         Firebase.firestore.collection("Chat")
             .whereArrayContains("participants", uid)
-            .orderBy(
-                "lastMessageTime",
-                Query.Direction.DESCENDING
-            )
+
             .addSnapshotListener { value, error ->
 
                 if (error != null) return@addSnapshotListener
 
                 val chats = value?.documents?.mapNotNull {
-
                     it.toObject(Chat::class.java)
-
                 }?.sortedByDescending {
-
                     it.lastMessageTime
-
                 } ?: emptyList()
 
-                adapter.submitList(ArrayList(chats))
+                if (chats.isEmpty()) {
+                    adapter.submitList(emptyList())
+                    return@addSnapshotListener
+                }
 
-                val userMap =
-                    mutableMapOf<String, Pair<String, String>>()
+                val userMap = mutableMapOf<String, Pair<String, String>>()
+                var pending = 0
 
                 chats.forEach { chat ->
-
-                    val otherUserId =
-                        chat.participants.firstOrNull {
-                            it != uid
-                        }
-
-                    if (otherUserId != null) {
-
+                    val otherUserId = chat.participants.firstOrNull { it != uid }
+                    if (otherUserId != null && !userMap.containsKey(otherUserId)) {
+                        pending++
                         Firebase.firestore.collection("Users")
                             .document(otherUserId)
                             .get()
                             .addOnSuccessListener { userDoc ->
-
-                                val name =
-                                    userDoc.getString("fullName")
-                                        ?: ""
-
-                                val image =
-                                    userDoc.getString("profilePictureUrl")
-                                        ?: ""
-
-                                userMap[otherUserId] =
-                                    Pair(name, image)
-
-                                adapter.setUserInfo(userMap)
+                                val name = userDoc.getString("fullName") ?: ""
+                                val image = userDoc.getString("profilePictureUrl") ?: ""
+                                userMap[otherUserId] = Pair(name, image)
+                                pending--
+                                // Only submit once ALL user fetches are done
+                                if (pending == 0) {
+                                    adapter.setUserInfo(userMap)
+                                    adapter.submitList(ArrayList(chats))
+                                }
+                            }
+                            .addOnFailureListener {
+                                pending--
+                                if (pending == 0) {
+                                    adapter.setUserInfo(userMap)
+                                    adapter.submitList(ArrayList(chats))
+                                }
                             }
                     }
                 }

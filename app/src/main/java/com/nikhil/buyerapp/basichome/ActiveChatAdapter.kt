@@ -47,7 +47,7 @@ class ActiveChatsAdapter(
             // Prevent flicker
             if (userData == null || otherUserId == null) {
 
-                binding.root.visibility = View.INVISIBLE
+
                 return
             }
 
@@ -115,8 +115,8 @@ class ActiveChatsAdapter(
         ): Boolean {
 
             return oldItem.lastMessage == newItem.lastMessage &&
-
-                    oldItem.lastSenderId == newItem.lastSenderId
+                    oldItem.lastSenderId == newItem.lastSenderId &&
+                    oldItem.lastMessageTime == newItem.lastMessageTime
         }
     }
 }
