@@ -6,7 +6,7 @@ import java.sql.Timestamp
 
 data class Project (
 
-    val projectid:String="",
+    var projectid:String="",
     val clientuid:String="",
     val clientName:String="",
     val freeuid:String="",

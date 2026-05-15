@@ -1,77 +1,117 @@
 package com.nikhil.buyerapp.basichome
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import com.google.firebase.Firebase
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.tabs.TabLayout
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.FirebaseFirestore
 import com.nikhil.buyerapp.R
 import com.nikhil.buyerapp.databinding.FragmentOrderBinding
+import com.nikhil.buyerapp.dataclasses.Project
+import com.nikhil.buyerapp.displayingorders.OrderAdapter
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [OrderFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class OrderFragment : Fragment() {
-    private var _binding:FragmentOrderBinding?=null
-    private val binding get()=_binding!!
-    val db= Firebase.firestore
-    var auth: FirebaseAuth = FirebaseAuth.getInstance()
-    val uid=auth.currentUser?.uid
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private var _binding: FragmentOrderBinding? = null
+    private val binding get() = _binding!!
+
+    private lateinit var adapter: OrderAdapter
+    private var allProjects = listOf<Project>()
+
+    private val db = FirebaseFirestore.getInstance()
+    private val auth: FirebaseAuth get() = FirebaseAuth.getInstance()
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        _binding=FragmentOrderBinding.inflate(inflater,container,false)
+    ): View {
+        _binding = FragmentOrderBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupRecycler()
+        setupTabFilter()
+        loadProjects()
+
         binding.addpost.setOnClickListener {
             findNavController().navigate(R.id.action_post)
         }
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment OrderFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            OrderFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+    private fun setupRecycler() {
+        adapter = OrderAdapter { project ->
+            Log.d("CLICKED_PROJECT", project.title)
+        }
+        binding.projectrecycler.layoutManager = LinearLayoutManager(requireContext())
+        binding.projectrecycler.isNestedScrollingEnabled = false
+        binding.projectrecycler.setHasFixedSize(false)
+        binding.projectrecycler.adapter = adapter
+    }
+
+    private fun setupTabFilter() {
+        binding.tabLayoutStatus.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                applyFilter(tab?.position ?: 0)
             }
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
+        })
+    }
+
+    private fun applyFilter(tabPosition: Int) {
+        val status = when (tabPosition) {
+            0 -> "OPEN"
+            1 -> "ASSIGNED"
+            2 -> "COMPLETED"
+            3 -> "CANCELLED"
+            else -> "OPEN"
+        }
+        adapter.submitList(allProjects.filter { it.status == status })
+    }
+
+    private fun loadProjects() {
+        val uid = auth.currentUser?.uid
+        if (uid == null) {
+            Log.e("AUTH", "User not logged in")
+            return
+        }
+
+        db.collection("Projects")
+            .whereEqualTo("clientuid", uid)
+            .addSnapshotListener { snapshots, error ->
+                if (error != null) {
+                    Log.e("FIRESTORE_ERROR", error.message.toString())
+                    return@addSnapshotListener
+                }
+
+                val projectList = mutableListOf<Project>()
+                snapshots?.documents?.forEach { document ->
+                    val project = document.toObject(Project::class.java)
+                    if (project != null) {
+                        project.projectid = document.id
+                        projectList.add(project)
+                    }
+                }
+
+                allProjects = projectList
+                applyFilter(binding.tabLayoutStatus.selectedTabPosition)
+
+                Log.d("FIRESTORE_DATA", "Projects loaded: ${projectList.size}")
+            }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
