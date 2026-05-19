@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
@@ -36,6 +37,8 @@ class BasicFragment : Fragment() {
     var userlist= arrayListOf<Certification>()
     val qlist= arrayListOf<Qualification>()
     lateinit var qadapter:QualAdapter
+    private lateinit var reviewAdapter: ReviewAdapter
+
     lateinit var uid:String
     lateinit var adapterr: CertAdapter
 
@@ -63,6 +66,7 @@ class BasicFragment : Fragment() {
         binding.recylercert.layoutManager=LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL,false)
         binding.recylercert.adapter=adapterr
         userlist.clear()
+        setupReviewRecycler()
 
 
 
@@ -71,10 +75,96 @@ class BasicFragment : Fragment() {
         qadapter= QualAdapter(qlist)
         binding.recylerqual.layoutManager=LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         binding.recylerqual.adapter=qadapter
+        binding.addReview.setOnClickListener {
+            val bundle = Bundle().apply {
+                putString("uid",uid)
+            }
+            findNavController().navigate(R.id.review,bundle)
+        }
 
         qlist.clear()
         startlisten()
         startlistencert()
+        startReviewListener()
+    }
+    private fun startReviewListener() {
+
+        db.collection("Freelancers")
+            .document(uid)
+
+            .addSnapshotListener { snapshot, error ->
+
+                if (error != null) {
+
+                    Log.e(
+                        "Firestore Review",
+                        "Review listener failed",
+                        error
+                    )
+
+                    return@addSnapshotListener
+                }
+
+                if (_binding == null) return@addSnapshotListener
+
+                if (snapshot != null && snapshot.exists()) {
+
+                    val freelancer =
+                        snapshot.toObject(Freelancer::class.java)
+
+                    // RATING
+                    val rating =
+                        freelancer?.rating ?: 0.0
+
+                    if (rating > 0) {
+
+                        binding.tvRating.text =
+                            "⭐ %.1f".format(rating)
+
+                    } else {
+
+                        binding.tvRating.text =
+                            "No ratings"
+                    }
+
+                    // REVIEWS
+                    val reviews =
+                        freelancer?.reviews ?: emptyList()
+
+                    if (reviews.isNotEmpty()) {
+
+                        val sortedReviews =
+                            reviews.sortedByDescending {
+                                it.timestamp
+                            }
+
+                        reviewAdapter.submitList(
+                            sortedReviews
+                        )
+
+                    } else {
+
+                        reviewAdapter.submitList(
+                            emptyList()
+                        )
+                    }
+
+                } else {
+
+                    Log.d(
+                        "Firestore Review",
+                        "Freelancer document missing"
+                    )
+                }
+            }
+    }
+    private fun setupReviewRecycler() {
+        reviewAdapter = ReviewAdapter()
+        binding.recylerReview.apply {
+            adapter = reviewAdapter
+            layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL,false)
+            isNestedScrollingEnabled = false
+        }
     }
     private fun startlistencert(){
         if(uid!=null){

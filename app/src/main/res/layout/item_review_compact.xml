@@ -6,9 +6,11 @@
     android:layout_width="220dp"
     android:layout_height="wrap_content"
     android:layout_marginEnd="12dp"
-    app:cardBackgroundColor="@color/bg"
+    app:cardBackgroundColor="@color/bgdark"
+
+    android:layout_margin="12dp"
     app:cardCornerRadius="12dp"
-    app:cardElevation="0dp"
+    app:cardElevation="4dp"
     app:strokeWidth="0dp"
 
     >

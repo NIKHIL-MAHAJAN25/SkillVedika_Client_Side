@@ -98,7 +98,7 @@
             android:layout_height="wrap_content"
 
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent  "
+            app:layout_constraintEnd_toEndOf="parent "
             app:layout_constraintTop_toBottomOf="@+id/tvcert"
             app:layout_constraintBottom_toTopOf="@+id/div4"/>
         <com.google.android.material.divider.MaterialDivider
@@ -130,14 +130,29 @@
             app:layout_constraintStart_toEndOf="@+id/tvReviews"
             android:textSize="20sp"
             android:textStyle="bold"/>
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/addReview"
+            android:clickable="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/div4"
+            android:text="Leave a Review"
+            android:focusable="true"
+            android:textColor="@color/darkgreen"
+            app:layout_constraintEnd_toStartOf="@+id/vguide2"
+            android:layout_marginTop="15dp"
+            android:textStyle="bold"/>
+
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recylerReview"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:clipToPadding="false"
-            app:layout_constraintStart_toEndOf="@+id/vguide1"
-            app:layout_constraintEnd_toStartOf="@+id/vguide2"
+
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tvReviews"
             app:layout_constraintBottom_toTopOf="@+id/div5"/>
         <com.google.android.material.divider.MaterialDivider

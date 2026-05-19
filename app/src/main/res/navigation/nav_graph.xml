@@ -14,6 +14,7 @@
         android:name="com.nikhil.buyerapp.basichome.SearchFragment"
         android:label="searchfrag"
         tools:layout="@layout/fragment_search"/>
+
     <fragment
         android:id="@+id/orders"
         android:name="com.nikhil.buyerapp.basichome.OrderFragment"
@@ -23,6 +24,12 @@
             android:id="@+id/action_post"
             app:destination="@+id/addpost"/>
     </fragment>
+
+    <fragment
+        android:id="@+id/review"
+        android:name="com.nikhil.buyerapp.freelanceprofileview.ReviewFragment"
+        android:label="review"
+        tools:layout="@layout/fragment_review"/>
     <fragment
         android:id="@+id/chatlist"
         android:name="com.nikhil.buyerapp.chatting.ChatInterface"

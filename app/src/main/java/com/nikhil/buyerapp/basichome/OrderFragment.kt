@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.tabs.TabLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.nikhil.buyerapp.R
 import com.nikhil.buyerapp.databinding.FragmentOrderBinding
 import com.nikhil.buyerapp.dataclasses.Project
@@ -25,6 +26,7 @@ class OrderFragment : Fragment() {
     private var allProjects = listOf<Project>()
 
     private val db = FirebaseFirestore.getInstance()
+    private var firestoreListener: ListenerRegistration? = null
     private val auth: FirebaseAuth get() = FirebaseAuth.getInstance()
 
     override fun onCreateView(
@@ -86,13 +88,15 @@ class OrderFragment : Fragment() {
             return
         }
 
-        db.collection("Projects")
+        firestoreListener = db.collection("Projects")
             .whereEqualTo("clientuid", uid)
             .addSnapshotListener { snapshots, error ->
                 if (error != null) {
                     Log.e("FIRESTORE_ERROR", error.message.toString())
                     return@addSnapshotListener
                 }
+                if (_binding == null) return@addSnapshotListener  // add this
+
 
                 val projectList = mutableListOf<Project>()
                 snapshots?.documents?.forEach { document ->
@@ -112,6 +116,7 @@ class OrderFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        firestoreListener?.remove()
         _binding = null
     }
 }

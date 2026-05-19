@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -7,166 +8,242 @@
     android:layout_height="match_parent"
     android:background="@color/bg">
 
+    <!-- TOP GUIDES -->
+
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/vguide1"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.05" />
+        app:layout_constraintGuide_percent="0.08"/>
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/vguide2"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.95" />
+        app:layout_constraintGuide_percent="0.92"/>
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/hguide1"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.05" />
+    <!-- ICON CARD -->
 
-    <TextView
-        android:id="@+id/tvHeader"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Resume AI Analyzer"
-        android:textColor="@color/darkgreen"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toEndOf="@id/vguide1"
-        app:layout_constraintTop_toBottomOf="@+id/hguide1" />
-
-    <TextView
-        android:id="@+id/lblJob"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="Paste Job Description"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:textSize="16sp"
-        app:layout_constraintTop_toBottomOf="@+id/tvHeader"
-        app:layout_constraintStart_toEndOf="@id/vguide1" />
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/layoutJob"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:hint="Job description"
-        app:placeholderText="Enter the Job description for which you are applying"
-        app:boxBackgroundColor="@color/bg"
-        app:boxStrokeColor="@color/darkgreen"
-        app:boxCornerRadiusTopStart="10dp"
-        app:boxCornerRadiusTopEnd="10dp"
-
-        app:boxCornerRadiusBottomStart="10dp"
-        app:boxCornerRadiusBottomEnd="10dp"
-        app:layout_constraintEnd_toStartOf="@+id/vguide2"
-        app:layout_constraintStart_toEndOf="@+id/vguide1"
-        app:layout_constraintTop_toBottomOf="@+id/lblJob">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etJobDesc"
-            android:layout_width="match_parent"
-            android:layout_height="120dp"
-            android:gravity="top|start"
-            android:inputType="textMultiLine"
-            android:textColor="#495048" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnUploadPdf"
-        android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:text="Upload Resume (PDF)"
-        android:layout_marginTop="20dp"
-        android:textColor="@color/darkgreen"
-
-        app:iconTint="@color/darkgreen"
-        app:iconGravity="textStart"
-        android:backgroundTint="@color/bg"
-        app:strokeColor="@color/darkgreen"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/iconCard"
+        android:layout_width="130dp"
+        android:layout_height="130dp"
+        android:layout_marginTop="30dp"
+        app:cardCornerRadius="32dp"
+        app:cardElevation="0dp"
         app:strokeWidth="1dp"
-        app:cornerRadius="10dp"
-        app:layout_constraintStart_toEndOf="@id/vguide1"
-        app:layout_constraintEnd_toStartOf="@id/vguide2"
-        app:layout_constraintTop_toBottomOf="@id/layoutJob"/>
+        app:strokeColor="#D7E3D4"
+        android:backgroundTint="#EEF5EC"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_gravity="center"
+            android:src="@drawable/aiiii"
+            app:tint="@color/darkgreen"/>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- TITLE -->
 
     <TextView
-        android:id="@+id/tvFileName"
+        android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="File Selected: Resume.pdf"
-        android:textColor="#495048"
-        android:textSize="14sp"
-        android:visibility="gone"
-        app:layout_constraintStart_toEndOf="@id/vguide1"
-        app:layout_constraintTop_toBottomOf="@id/btnUploadPdf"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnAnalyze"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Analyze with AI"
-        android:padding="15dp"
-        android:layout_marginTop="18dp"
-        android:textColor="@color/white"
-        android:backgroundTint="#698B6A"
-        app:cornerRadius="10dp"
-        app:layout_constraintStart_toEndOf="@id/vguide1"
-        app:layout_constraintEnd_toStartOf="@id/vguide2"
-        app:layout_constraintTop_toBottomOf="@id/tvFileName"/>
-
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:indeterminateTint="@color/darkgreen"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="28dp"
+        android:text="AI Hiring Assistant"
+        android:textColor="@color/black"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/iconCard"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <ScrollView
-        android:id="@+id/resultLayout"
+    <!-- SUBTITLE -->
+
+    <TextView
+        android:id="@+id/tvSubtitle"
         android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/vguide2"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:gravity="center"
+        android:lineSpacingExtra="3dp"
+        android:text="We're building a much smarter AI-powered freelancer matching and candidate analysis experience."
+        android:textColor="#667085"
+        android:textSize="15sp"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"
         app:layout_constraintStart_toEndOf="@id/vguide1"
-        app:layout_constraintTop_toBottomOf="@id/btnAnalyze">
+        app:layout_constraintEnd_toStartOf="@id/vguide2"/>
 
-        <LinearLayout
+    <!-- FEATURE CARDS -->
+
+    <LinearLayout
+        android:id="@+id/featureContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="36dp"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@id/tvSubtitle"
+        app:layout_constraintStart_toEndOf="@id/vguide1"
+        app:layout_constraintEnd_toStartOf="@id/vguide2">
+
+        <!-- FEATURE 1 -->
+
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="0dp"
+            android:backgroundTint="#F6F9F5"
+            app:strokeWidth="1dp"
+            app:strokeColor="#E2E8E0">
 
-            <TextView
-                android:id="@+id/tvScore"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Score: 85%"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                android:textColor="@color/darkgreen"
-                android:gravity="center"/>
+                android:orientation="horizontal"
+                android:padding="16dp">
 
-            <TextView
-                android:id="@+id/tvFeedback"
+
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Smart Candidate Matching"
+                        android:textColor="@color/black"
+                        android:textSize="15sp"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:text="AI-ranked freelancers based on project fit and skill depth."
+                        android:textColor="#667085"
+                        android:textSize="13sp"/>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- FEATURE 2 -->
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="0dp"
+            android:backgroundTint="#F6F9F5"
+            app:strokeWidth="1dp"
+            app:strokeColor="#E2E8E0">
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="Feedback here..."
-                android:textColor="@color/black"/>
-        </LinearLayout>
-    </ScrollView>
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="AI Project Insights"
+                        android:textColor="@color/black"
+                        android:textSize="15sp"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:text="Automatic risk detection, scope estimation, and hiring suggestions."
+                        android:textColor="#667085"
+                        android:textSize="13sp"/>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- FEATURE 3 -->
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="0dp"
+            android:backgroundTint="#F6F9F5"
+            app:strokeWidth="1dp"
+            app:strokeColor="#E2E8E0">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Realtime Hiring Recommendations"
+                        android:textColor="@color/black"
+                        android:textSize="15sp"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:text="Get intelligent recommendations instantly while posting projects."
+                        android:textColor="#667085"
+                        android:textSize="13sp"/>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+
+    <!-- COMING SOON BADGE -->
+
+    <com.google.android.material.chip.Chip
+        android:id="@+id/chipComingSoon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Coming Soon"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        app:chipBackgroundColor="@color/darkgreen"
+        app:chipCornerRadius="30dp"
+        app:layout_constraintTop_toBottomOf="@id/featureContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="28dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
