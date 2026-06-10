@@ -21,7 +21,7 @@ class LoginActivity : AppCompatActivity() {
     lateinit var binding:ActivityLoginBinding
     private var auth:FirebaseAuth=FirebaseAuth.getInstance()
     val db=Firebase.firestore
-    val uid=auth.currentUser?.uid
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -37,11 +37,12 @@ class LoginActivity : AppCompatActivity() {
             val psswrd=binding.etpsswrdsignin2.text.toString()
             if(aemail.isEmpty() || psswrd.isEmpty())
             {
-                    showtoast("One of the fields is empty")
+                showtoast("One of the fields is empty")
                 return@setOnClickListener
             }
             else{
                 auth.signInWithEmailAndPassword(aemail,psswrd).addOnSuccessListener {
+                    val uid = auth.currentUser?.uid
                     if(uid!=null)
                     {
                         db.collection("Users").document(uid).get().addOnSuccessListener { document->

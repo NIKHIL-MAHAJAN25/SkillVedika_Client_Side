@@ -1,6 +1,7 @@
 package com.nikhil.buyerapp.comprofile
 
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -8,6 +9,7 @@ import android.view.Gravity
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.chip.Chip
@@ -37,8 +39,9 @@ class ProfileScreen2 : AppCompatActivity() {
     private val languages = listOf("Telugu",
         "English",
         "Assamese",
-        "Hindi",
         "Konkani",
+        "Dogri",
+        "Tulu",
         "Gujarati",
         "Kannada",
         "Malayalam",
@@ -51,6 +54,7 @@ class ProfileScreen2 : AppCompatActivity() {
         "Tamil",
         "Bengali",
         "Urdu",
+        "Hindi",
         "Ladakhi")
     val db=Firebase.firestore
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -115,14 +119,17 @@ class ProfileScreen2 : AppCompatActivity() {
     }
     private fun populate() {
         languages.forEach { language ->
-            val chip = Chip(this,null,R.style.CustomChipStyle).apply {
+            val chip = Chip(this, null, R.style.CustomChipStyle).apply {
                 text = language
                 isCheckable = true
                 isClickable = true
-
                 textAlignment = android.view.View.TEXT_ALIGNMENT_CENTER
-
                 setPadding(32, 16, 32, 16)
+
+                // Force background color — Material3 ignores XML chipBackgroundColor via constructor
+                val bgColor = ContextCompat.getColor(context, R.color.bg)
+                chipBackgroundColor = ColorStateList.valueOf(bgColor)
+                setTextColor(ContextCompat.getColor(context, R.color.black))
             }
             binding.chipGroupLang.addView(chip)
 

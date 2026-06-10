@@ -1,10 +1,12 @@
 package com.nikhil.buyerapp.profile
 
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -226,16 +228,16 @@ class CoreProfileFragment : Fragment() {
 
         selectedPayments.forEach { method ->
 
-            val chip =
-                Chip(
-                    requireContext(),
-                    null,
-                    R.style.CustomChipStyle
+            val chip = Chip(requireContext(), null, R.style.MyCustomChip).apply {
+                text = method
+                isCloseIconVisible = false
+                isCheckable = false
+                typeface = android.graphics.Typeface.DEFAULT_BOLD
+                chipBackgroundColor = ColorStateList.valueOf(
+                    ContextCompat.getColor(requireContext(), R.color.bg)
                 )
-
-            chip.text = method
-
-            chip.isCloseIconVisible = false
+                setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+            }
 
             binding.chipPaymentMethods.addView(chip)
         }
