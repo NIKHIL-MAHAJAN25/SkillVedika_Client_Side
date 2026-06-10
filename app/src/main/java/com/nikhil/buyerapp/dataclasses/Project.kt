@@ -11,6 +11,7 @@ data class Project (
     val clientName:String="",
     val freeuid:String="",
     val freename:String?="Not Assigned",
+    val freeemail: String?="",
     val title: String = "",
     val description: String = "",
     val category:String="",

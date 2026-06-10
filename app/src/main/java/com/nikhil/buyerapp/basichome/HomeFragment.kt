@@ -105,6 +105,11 @@ class HomeFragment : Fragment() {
         setup()
         setupnews()
         loadinfo()
+        binding.newsShimmer.visibility = View.VISIBLE
+        binding.newsShimmer.startShimmer()
+
+        binding.recyclernews.visibility = View.GONE
+
         fetchnews()
         ///////////////////////////////////////////search logic//////////////////////////////////////////////////
         binding.etsearchbar.addTextChangedListener(object : TextWatcher {
@@ -153,6 +158,10 @@ class HomeFragment : Fragment() {
         ) {
 
             newsAdapter.submitList(cachedNews)
+            binding.newsShimmer.stopShimmer()
+            binding.newsShimmer.visibility = View.GONE
+
+            binding.recyclernews.visibility = View.VISIBLE
 
             logd("Loaded news from cache")
 
@@ -192,7 +201,16 @@ class HomeFragment : Fragment() {
                             lastFetchTime =
                                 System.currentTimeMillis()
 
-                            newsAdapter.submitList(cleanList)
+                            val uniqueNews = cleanList
+                                .distinctBy {
+                                    it.title.lowercase().trim()
+                                }
+
+                            newsAdapter.submitList(uniqueNews)
+                            binding.newsShimmer.stopShimmer()
+                            binding.newsShimmer.visibility = View.GONE
+
+                            binding.recyclernews.visibility = View.VISIBLE
 
                         } else {
 

@@ -20,8 +20,8 @@ class NewsAdapter(private val onArticleClick: (String) -> Unit):ListAdapter<Resu
                 tvNewsDesc.text=article.description
                 Glide.with(root.context)
                     .load(article.image_url)
-                    .placeholder(R.drawable.ic_launcher_foreground) // Change to your placeholder
-                    .error(R.drawable.ic_launcher_background) // Change to your error image
+                    .placeholder(R.drawable.newsplacee) // Change to your placeholder
+                    .error(R.drawable.newsplacee) // Change to your error image
                     .fitCenter()
                     .into(ivNewsImage)
                 root.setOnClickListener {
