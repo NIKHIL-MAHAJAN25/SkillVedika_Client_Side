@@ -338,39 +338,37 @@ class HomeFragment : Fragment() {
             }
     }
     private fun performNameSearch(query: String) {
+        val lowerQuery = query.lowercase().trim()
 
-        // Note: This searches your "Skills" collection by title based on your existing code
-        db.collection("Freelancers")
-            .orderBy("name")
-            .startAt(query)
-            .endAt(query + "\uf8ff")
-            .get()
+        db.collection("Freelancers").get()
             .addOnSuccessListener { freelancerDocs ->
                 val freelancerList = mutableListOf<FreelancerItem>()
 
-                // If no freelancers found, just update and return
                 if (freelancerDocs.isEmpty) {
                     freeshow.submitList(emptyList())
                     return@addOnSuccessListener
                 }
 
-                // Loop through each freelancer to "Join" their User Data
-                for (doc in freelancerDocs) {
+                // filter client side case insensitively
+                val filtered = freelancerDocs.filter { doc ->
+                    val name = doc.getString("name") ?: ""
+                    name.lowercase().contains(lowerQuery)
+                }
+
+                if (filtered.isEmpty()) {
+                    freeshow.submitList(emptyList())
+                    return@addOnSuccessListener
+                }
+
+                for (doc in filtered) {
                     val freelancer = doc.toObject(FreelancerItem::class.java)
-                    val uid = doc.id // Assuming document ID is the User UID
 
-                    // Fetch the image from the "Users" collection
-                    db.collection("Users").document(uid).get()
+                    db.collection("Users").document(doc.id).get()
                         .addOnSuccessListener { userDoc ->
-                            val imageUrl = userDoc.getString("profilePictureUrl") ?: ""
-
-                            // Set the URL manually into your object
-                            freelancer.profileImageUrl = imageUrl
-
+                            freelancer.profileImageUrl = userDoc.getString("profilePictureUrl") ?: ""
                             freelancerList.add(freelancer)
 
-                            // Once we have processed all documents, submit the list
-                            if (freelancerList.size == freelancerDocs.size()) {
+                            if (freelancerList.size == filtered.size) {
                                 freeshow.submitList(freelancerList.toList())
                             }
                         }

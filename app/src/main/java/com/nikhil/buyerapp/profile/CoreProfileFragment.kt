@@ -1,13 +1,21 @@
 package com.nikhil.buyerapp.profile
 
+import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -19,11 +27,19 @@ import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import com.nikhil.buyerapp.Login.LoginActivity
 import com.nikhil.buyerapp.R
+import com.nikhil.buyerapp.comprofile.supabasefile
 import com.nikhil.buyerapp.databinding.FragmentProfileBinding
 import com.nikhil.buyerapp.dataclasses.Client
 import com.nikhil.buyerapp.dataclasses.User
 import com.nikhil.buyerapp.utils.logd
 import com.nikhil.buyerapp.utils.loge
+import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.storage.UploadStatus
+import io.github.jan.supabase.storage.storage
+import io.github.jan.supabase.storage.uploadAsFlow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
@@ -53,10 +69,21 @@ class CoreProfileFragment : Fragment() {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
     private val uid = auth.currentUser?.uid
+    private lateinit var supabaseClient: SupabaseClient
 
     private val db = Firebase.firestore
 
     private lateinit var reviewAdapter: ReviewAdapter
+    private val pickImagelauncher= registerForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    )
+    {
+        uri ->
+        if(uri!=null)
+        {
+            uploadImageToSupabase(uri)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,6 +122,14 @@ class CoreProfileFragment : Fragment() {
         loadinfo()
 
         loadotherinfo()
+        supabaseClient = (requireActivity().application as supabasefile).supabaseClient
+        binding.btnEditPhoto.setOnClickListener {
+            pickImagelauncher.launch(
+                PickVisualMediaRequest(
+                    ActivityResultContracts.PickVisualMedia.ImageOnly
+                )
+            )
+        }
 
         binding.btnEditProfile.setOnClickListener {
 
@@ -146,7 +181,60 @@ class CoreProfileFragment : Fragment() {
             isNestedScrollingEnabled = false
         }
     }
+    private fun uploadImageToSupabase(uri: Uri) {
 
+        val byteArray = uriToByteArray(requireContext(), uri)
+
+        if (byteArray.size > 5 * 1024 * 1024) {
+
+            Toast.makeText(
+                requireContext(),
+                "Image must be under 5 MB",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            return
+        }
+
+        binding.btnEditPhoto.isEnabled = false
+        val fileName = "uploads/${System.currentTimeMillis()}.jpg"
+
+        val bucket = supabaseClient.storage.from("sample") // Choose your bucket name
+
+        // Use lifecycleScope for safe coroutine usage
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                // Upload image and handle the response
+                bucket.uploadAsFlow(fileName, byteArray).collect { status ->
+                    withContext(Dispatchers.Main) {
+                        when (status) {
+                            is UploadStatus.Progress -> {
+//                                val progress = (status.totalBytesSent.toFloat() / status.contentLength * 100)
+                                Log.d("Upload", "Progress%")
+                            }
+
+                            is UploadStatus.Success -> {
+
+                                binding.btnEditPhoto.isEnabled = true
+
+                                Log.d("Upload ", "Upload Success")
+
+                                handleUploadSuccess(bucket, fileName)
+                            }
+
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    binding.btnEditPhoto.isEnabled = true
+
+                    Log.e("Upload", "Error uploading image: ${e.message}")
+
+                }
+            }
+        }
+    }
     private fun showPaymentMethodsDialog() {
 
         val checkedItems =
@@ -404,6 +492,51 @@ class CoreProfileFragment : Fragment() {
                 }
         }
     }
+    private fun uriToByteArray(
+        context: Context,
+        uri: Uri
+    ): ByteArray {
+
+        return context.contentResolver
+            .openInputStream(uri)
+            ?.use {
+                it.readBytes()
+            }
+            ?: throw Exception("Unable to read image")
+    }
+    private fun handleUploadSuccess(bucket: Any, fileName: String) {
+        try {
+            val imageUrl = supabaseClient.storage.from("sample").publicUrl(fileName)
+            Log.d("ProfileFragment", "Generated public URL: $imageUrl")
+
+            val currentUser = auth.currentUser
+            if (currentUser != null) {
+                Log.d("ProfileFragment", "Updating Firestore with new image URL")
+                db.collection("Users")
+                    .document(currentUser.uid)
+                    .update("profilePictureUrl",imageUrl)
+                    .addOnSuccessListener {
+                        Log.d("ProfileFragment", "Firestore update successful")
+                        Toast.makeText(requireContext(), "Profile image updated!", Toast.LENGTH_SHORT).show()
+                        Glide.with(this)
+                            .load(imageUrl)
+                            .error(R.drawable.ic_launcher_background)
+                            .into(binding.profileImage)
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("FirestoreUpdate", "Failed to update profile image URL: ${e.message}", e)
+                        Toast.makeText(requireContext(), "Failed to update profile image: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+            } else {
+                Log.e("ProfileFragment", "Current user is null")
+                Toast.makeText(requireContext(), "User authentication error", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            Log.e("ProfileFragment", "Error in handleUploadSuccess: ${e.message}", e)
+            Toast.makeText(requireContext(), "Error processing upload success: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
 
     companion object {
 

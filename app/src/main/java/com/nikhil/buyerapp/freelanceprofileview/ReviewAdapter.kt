@@ -6,12 +6,13 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.nikhil.buyerapp.databinding.ItemReviewCompactBinding
+import com.nikhil.buyerapp.databinding.ItemReviewFreelancerBinding
 import com.nikhil.buyerapp.dataclasses.Review
 
 
 class ReviewAdapter : ListAdapter<Review, ReviewAdapter.ViewHolder>(ReviewDiffCallback()) {
 
-    inner class ViewHolder(private val binding: ItemReviewCompactBinding) :
+    inner class ViewHolder(private val binding: ItemReviewFreelancerBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(review: Review) {
@@ -22,7 +23,7 @@ class ReviewAdapter : ListAdapter<Review, ReviewAdapter.ViewHolder>(ReviewDiffCa
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding = ItemReviewCompactBinding.inflate(
+        val binding = ItemReviewFreelancerBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
         return ViewHolder(binding)

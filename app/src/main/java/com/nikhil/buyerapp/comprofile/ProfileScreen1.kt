@@ -16,6 +16,8 @@ import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -41,18 +43,30 @@ import kotlinx.coroutines.withContext
 class ProfileScreen1 : AppCompatActivity() {
     lateinit var binding: ActivityProfileScreen1Binding
     private var auth: FirebaseAuth = FirebaseAuth.getInstance()
-    val db= Firebase.firestore
-    private val PICK_IMAGE_REQUEST = 1
-    private val PERMISSION_REQUEST_CODE = 100
-    private val MANAGE_EXTERNAL_STORAGE_REQUEST_CODE = 101
+    val db = Firebase.firestore
+
     private lateinit var supabaseClient: SupabaseClient
+    private val pickImageLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.PickVisualMedia()
+        ) { uri ->
+
+            if (uri != null) {
+                uploadImageToSupabase(uri)
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        binding=ActivityProfileScreen1Binding.inflate(layoutInflater)
+        binding = ActivityProfileScreen1Binding.inflate(layoutInflater)
         setContentView(binding.root)
-        val occupationlist= listOf(
-            "Business Owner","Salaried Employee","Freelancer/self Employed","Student","Not applicable"
+        val occupationlist = listOf(
+            "Business Owner",
+            "Salaried Employee",
+            "Freelancer/self Employed",
+            "Student",
+            "Not applicable"
         )
         val statesList = listOf(
             "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
@@ -64,34 +78,39 @@ class ProfileScreen1 : AppCompatActivity() {
             "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi",
             "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry"
         )
-        
-        val aradapter=ArrayAdapter(this,android.R.layout.simple_dropdown_item_1line,statesList)
+
+        val aradapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, statesList)
         binding.actState.setAdapter(aradapter)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-       val ocadapter=ArrayAdapter(this,R.layout.item_dropdown_interest,occupationlist)
+        val ocadapter = ArrayAdapter(this, R.layout.item_dropdown_interest, occupationlist)
         binding.etoccup2.setAdapter(ocadapter)
         binding.etoccup2.setOnClickListener {
             binding.etoccup2.showDropDown()
         }
 
-        supabaseClient=(this.application as supabasefile).supabaseClient
+        supabaseClient = (this.application as supabasefile).supabaseClient
         binding.profileImage2.setOnClickListener {
-            checkPermission()
+
+            pickImageLauncher.launch(
+                PickVisualMediaRequest(
+                    ActivityResultContracts.PickVisualMedia.ImageOnly
+                )
+            )
         }
         binding.btnNext.setOnClickListener {
 
 
-            val uid=auth.currentUser?.uid
-            val aname=binding.etname2.text.toString()
-            val code=binding.countryCodePicker.selectedCountryCodeWithPlus
-            val numbere=binding.etPhone.text.toString()
-            val full="$code$numbere"
-            val occupations=binding.etoccup2.text.toString()
-            val states=binding.actState.text.toString()
+            val uid = auth.currentUser?.uid
+            val aname = binding.etname2.text.toString()
+            val code = binding.countryCodePicker.selectedCountryCodeWithPlus
+            val numbere = binding.etPhone.text.toString()
+            val full = "$code$numbere"
+            val occupations = binding.etoccup2.text.toString()
+            val states = binding.actState.text.toString()
 
             val userUpdates = mapOf(
                 "fullName" to aname,
@@ -103,148 +122,93 @@ class ProfileScreen1 : AppCompatActivity() {
             )
             if (uid != null) {
                 db.collection("Users").document(uid).update(userUpdates).addOnSuccessListener {
-                    Toast.makeText(this,"Data saved",Toast.LENGTH_SHORT).show()
-                    startActivity(Intent(this,ProfileScreen2::class.java))
+                    Toast.makeText(this, "Data saved", Toast.LENGTH_SHORT).show()
+                    startActivity(Intent(this, ProfileScreen2::class.java))
                 }
             }
 
         }
 
     }
-    private fun checkPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(
+
+
+
+
+
+
+
+        private fun uploadImageToSupabase(uri: Uri) {
+
+            val byteArray = uriToByteArray(this, uri)
+
+            if (byteArray.size > 5 * 1024 * 1024) {
+
+                Toast.makeText(
                     this,
-                    Manifest.permission.READ_MEDIA_IMAGES
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                requestPermissions(
-                    arrayOf(Manifest.permission.READ_MEDIA_IMAGES),
-                    PERMISSION_REQUEST_CODE
-                )
-            } else {
-                pickImage()
+                    "Image must be under 5 MB",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                return
             }
-        } else {
-            if (ContextCompat.checkSelfPermission(
-                   this,
-                    Manifest.permission.READ_EXTERNAL_STORAGE
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                requestPermissions(
-                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
-                    PERMISSION_REQUEST_CODE
-                )
-            } else {
-                pickImage()
-            }
-        }
-    }
 
-    private fun requestManage() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            // For Android 11 (API level 30) and above
-            try {
-                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                startActivityForResult(intent, PERMISSION_REQUEST_CODE)
-            } catch (e: ActivityNotFoundException) {
-                // Handle the case where the intent is not available (maybe the device is on a lower version)
-                Log.e("PermissionRequest", "Activity not found for the permission intent.")
-            }
-        } else {
-            // Handle this case for older Android versions (below Android 11)
-            Log.e("PermissionRequest", "The permission is only available on Android 11 (API level 30) and above.")
-        }
-//        // Request the user to open settings to allow full access
-//        val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-//        startActivityForResult(intent, MANAGE_EXTERNAL_STORAGE_REQUEST_CODE)
-    }
-    private fun pickImage(){
-        val intent= Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        startActivityForResult(intent,PICK_IMAGE_REQUEST)
-    }
+            binding.profileImage2.isEnabled = false
+            val fileName = "uploads/${System.currentTimeMillis()}.jpg"
 
-    private fun uploadImageToSupabase(uri: Uri) {
-        val byteArray = uriToByteArray(this, uri)
-        val fileName = "uploads/${System.currentTimeMillis()}.jpg"
+            val bucket = supabaseClient.storage.from("sample") // Choose your bucket name
 
-        val bucket = supabaseClient.storage.from("sample") // Choose your bucket name
-
-        // Use lifecycleScope for safe coroutine usage
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                // Upload image and handle the response
-                bucket.uploadAsFlow(fileName, byteArray).collect { status ->
-                    withContext(Dispatchers.Main) {
-                        when (status) {
-                            is UploadStatus.Progress -> {
+            // Use lifecycleScope for safe coroutine usage
+            lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    // Upload image and handle the response
+                    bucket.uploadAsFlow(fileName, byteArray).collect { status ->
+                        withContext(Dispatchers.Main) {
+                            when (status) {
+                                is UploadStatus.Progress -> {
 //                                val progress = (status.totalBytesSent.toFloat() / status.contentLength * 100)
-                                Log.d("Upload", "Progress%")
+                                    Log.d("Upload", "Progress%")
+                                }
+
+                                is UploadStatus.Success -> {
+
+                                    binding.profileImage2.isEnabled = true
+
+                                    Log.d("Upload ", "Upload Success")
+
+                                    handleUploadSuccess(bucket, fileName)
+                                }
+
                             }
-                            is UploadStatus.Success -> {
-                                Log.d("Upload ", "Upload Success")
-                                handleUploadSuccess(bucket, fileName)
-
-
-
-
-
-
-
-                            }
-
                         }
                     }
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Log.e("Upload", "Error uploading image: ${e.message}")
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        binding.profileImage2.isEnabled = true
 
-                }
-            }
-        }
-    }
-    private fun uriToByteArray(context: Context, uri: Uri): ByteArray {
-        val inputStream = context.contentResolver.openInputStream(uri)
-        return inputStream?.readBytes() ?: ByteArray(0)
-    }
-    @RequiresApi(Build.VERSION_CODES.R)
+                        Log.e("Upload", "Error uploading image: ${e.message}")
 
-
-    override fun onRequestPermissionsResult(requestCode: Int,
-                                            permissions: Array<String>,
-                                            grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when (requestCode) {
-            PERMISSION_REQUEST_CODE -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // Permission granted, proceed with file operations
-                    Toast.makeText(this, "Permission granted", Toast.LENGTH_SHORT).show()
-                    pickImage()
-                } else {
-                    Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
-                }
-            }
-            MANAGE_EXTERNAL_STORAGE_REQUEST_CODE -> {
-                if (Environment.isExternalStorageManager()) {
-                    // The user granted permission for full access
-                    Toast.makeText(this, "Full storage access granted", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(this, "Storage permission not granted", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }
-    }
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
 
-        if (resultCode == Activity.RESULT_OK && requestCode == PICK_IMAGE_REQUEST) {
-            data?.data?.let { uri ->
-                // Handle the selected image (upload it to Supabase)
-                uploadImageToSupabase(uri)
+    private fun uriToByteArray(
+        context: Context,
+        uri: Uri
+    ): ByteArray {
+
+        return context.contentResolver
+            .openInputStream(uri)
+            ?.use {
+                it.readBytes()
             }
-        }
+            ?: throw Exception("Unable to read image")
     }
+
+
+
+
+
     private fun handleUploadSuccess(bucket: Any, fileName: String) {
         try {
             val imageUrl = supabaseClient.storage.from("sample").publicUrl(fileName)

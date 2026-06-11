@@ -37,6 +37,11 @@ class ChatFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.chatShimmer.startShimmer()
+
+        binding.chatShimmer.visibility = View.VISIBLE
+
+        binding.chatlist.visibility = View.GONE
 
         setupRecycler()
 
@@ -91,6 +96,10 @@ class ChatFragment : Fragment() {
                 } ?: emptyList()
 
                 if (chats.isEmpty()) {
+                    binding.chatShimmer.stopShimmer()
+                    binding.chatShimmer.visibility = View.GONE
+
+                    binding.chatlist.visibility = View.VISIBLE
                     adapter.submitList(emptyList())
                     return@addSnapshotListener
                 }
@@ -114,6 +123,11 @@ class ChatFragment : Fragment() {
                                 if (pending == 0) {
                                     adapter.setUserInfo(userMap)
                                     adapter.submitList(ArrayList(chats))
+                                    binding.chatShimmer.stopShimmer()
+
+                                    binding.chatShimmer.visibility = View.GONE
+
+                                    binding.chatlist.visibility = View.VISIBLE
                                 }
                             }
                             .addOnFailureListener {
