@@ -6,7 +6,7 @@ object SkillData {
     fun getSkillCategories(): List<SkillsCat> {
         return listOf(
             SkillsCat(
-                categoryName = "Core Programming Software Development",
+                categoryName = "Core Programming and Software Development",
                 skills = listOf("Python", "Java", "JavaScript", "TypeScript", "Kotlin", "Swift", "C++", "C#", "Go", "Rust", "PHP", "Ruby", "SQL")
             ),
             SkillsCat(

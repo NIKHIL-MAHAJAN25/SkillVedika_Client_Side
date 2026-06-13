@@ -49,14 +49,14 @@
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/profileImage"
-        android:layout_width="wrap_content"
+        android:layout_width="110dp"
         android:layout_height="110dp"
         android:clickable="true"
         android:background="@android:color/white"
         android:elevation="4dp"
         android:layout_marginTop="20dp"
         android:scaleType="centerCrop"
-        android:src="@drawable/ic_launcher_background"
+        android:src="@drawable/untitleddesign"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/hguide1"
         app:layout_constraintStart_toStartOf="parent"
@@ -64,30 +64,19 @@
         app:shapeAppearanceOverlay="@style/circleview" />
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/cameraFab"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginBottom="4dp"
+        android:layout_gravity="bottom|end"
         app:layout_constraintEnd_toEndOf="@id/profileImage"
+        app:fabCustomSize="32dp"
         app:layout_constraintBottom_toBottomOf="@id/profileImage"
-        app:backgroundTint="@color/white"
+        app:srcCompat="@drawable/outline_camera_alt_24"
+        app:backgroundTint="@color/bg"
         app:tint="@color/black"
-        app:maxImageSize="24dp"
-        app:fabSize="mini"/>
-    <com.google.android.material.imageview.ShapeableImageView
-        android:id="@+id/profileImage2"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
-        android:clickable="true"
-        app:layout_constraintTop_toTopOf="@id/cameraFab"
-        android:background="@android:color/white"
-        android:elevation="6dp"
-        android:scaleType="centerCrop"
-        android:src="@drawable/baseline_image_24"
-        app:layout_constraintBottom_toBottomOf="@id/cameraFab"
-        app:layout_constraintEnd_toEndOf="@id/cameraFab"
-        app:layout_constraintStart_toStartOf="@id/cameraFab"
-        app:shapeAppearanceOverlay="@style/circleview" />
+        app:maxImageSize="18dp"/>
+
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/etname"
         android:layout_width="0dp"

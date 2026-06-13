@@ -93,7 +93,7 @@ class ProfileScreen1 : AppCompatActivity() {
         }
 
         supabaseClient = (this.application as supabasefile).supabaseClient
-        binding.profileImage2.setOnClickListener {
+        binding.cameraFab.setOnClickListener {
 
             pickImageLauncher.launch(
                 PickVisualMediaRequest(
@@ -152,7 +152,7 @@ class ProfileScreen1 : AppCompatActivity() {
                 return
             }
 
-            binding.profileImage2.isEnabled = false
+            binding.cameraFab.isEnabled = false
             val fileName = "uploads/${System.currentTimeMillis()}.jpg"
 
             val bucket = supabaseClient.storage.from("sample") // Choose your bucket name
@@ -171,7 +171,7 @@ class ProfileScreen1 : AppCompatActivity() {
 
                                 is UploadStatus.Success -> {
 
-                                    binding.profileImage2.isEnabled = true
+                                    binding.cameraFab.isEnabled = true
 
                                     Log.d("Upload ", "Upload Success")
 
@@ -183,7 +183,7 @@ class ProfileScreen1 : AppCompatActivity() {
                     }
                 } catch (e: Exception) {
                     withContext(Dispatchers.Main) {
-                        binding.profileImage2.isEnabled = true
+                        binding.cameraFab.isEnabled = true
 
                         Log.e("Upload", "Error uploading image: ${e.message}")
 

@@ -12,6 +12,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
 import com.nikhil.buyerapp.R
+import com.nikhil.buyerapp.Signup.SignupActivity
 import com.nikhil.buyerapp.Signup.SignupActivity2
 import com.nikhil.buyerapp.basichome.hosthome
 import com.nikhil.buyerapp.comprofile.ProfileScreen1
@@ -55,7 +56,17 @@ class LoginActivity : AppCompatActivity() {
                             {
                                 val status=document.getBoolean("profilecomplete")
                                 val appstatus=document.getBoolean("approved")
+                                val userole=document.getString("userole")
                                 when{
+                                    userole!="CLIENT"-> {
+                                        FirebaseAuth.getInstance().signOut()
+                                        Toast.makeText(
+                                            this,
+                                            "Account already exists as a Freelancer",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        startActivity(Intent(this, SignupActivity::class.java))
+                                    }
                                     !status!! && !appstatus!! ->{
                                         showtoast("Complete your profile first")
                                         startActivity(Intent(this,ProfileScreen1::class.java))
