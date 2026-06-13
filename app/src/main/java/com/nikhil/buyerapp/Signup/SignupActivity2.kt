@@ -38,6 +38,7 @@ class SignupActivity2 : AppCompatActivity() {
         }
         binding.alrsignin.setOnClickListener {
             startActivity(Intent(this, LoginActivity::class.java))
+            finish()
         }
         binding.btnSignUP.setOnClickListener {
             val aemail=binding.etmailsignin2.text.toString()
@@ -69,7 +70,7 @@ class SignupActivity2 : AppCompatActivity() {
 
 
                 }.addOnFailureListener {
-                    Toast.makeText(this,"failed",Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this,"Email already Exists",Toast.LENGTH_SHORT).show()
                 }
             }
             else{

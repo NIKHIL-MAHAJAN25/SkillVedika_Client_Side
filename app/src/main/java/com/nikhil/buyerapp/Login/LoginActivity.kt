@@ -12,6 +12,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
 import com.nikhil.buyerapp.R
+import com.nikhil.buyerapp.Signup.SignupActivity2
 import com.nikhil.buyerapp.basichome.hosthome
 import com.nikhil.buyerapp.comprofile.ProfileScreen1
 import com.nikhil.buyerapp.comprofile.ProfileScreen2
@@ -31,6 +32,10 @@ class LoginActivity : AppCompatActivity() {
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
+        }
+        binding.alrsignup.setOnClickListener {
+            startActivity(Intent(this, SignupActivity2::class.java))
+            finish()
         }
         binding.btnSignin.setOnClickListener {
             val aemail=binding.etmailsignin2.text.toString()

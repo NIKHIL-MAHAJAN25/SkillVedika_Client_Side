@@ -98,6 +98,7 @@
             android:background="@drawable/rounded_chat_bot"
             android:gravity="center_vertical"
             android:minHeight="48dp"
+            android:layout_marginBottom="20dp"
             android:layout_marginEnd="8dp">
 
             <EditText
@@ -120,7 +121,7 @@
             android:id="@+id/btnSend"
             android:layout_width="48dp"
             android:layout_height="48dp"
-
+            android:layout_marginBottom="20dp"
             android:background="@drawable/circle_chat"
             android:src="@drawable/baseline_send_24"
             android:padding="12dp"

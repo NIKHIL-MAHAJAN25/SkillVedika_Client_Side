@@ -34,8 +34,8 @@ import kotlin.random.Random
 class ProfileScreen2 : AppCompatActivity() {
     lateinit var binding:ActivityProfileScreen2Binding
     private var auth: FirebaseAuth = FirebaseAuth.getInstance()
-    private lateinit var storedid:String
-    lateinit var resendtoken:PhoneAuthProvider.ForceResendingToken
+
+
     private val languages = listOf("Telugu",
         "English",
         "Assamese",
@@ -71,6 +71,7 @@ class ProfileScreen2 : AppCompatActivity() {
         binding.btnNext.setOnClickListener {
             savedata()
             startActivity(Intent(this,EnterCode::class.java))
+            finish()
         }
     }
     private fun savedata() {
@@ -107,7 +108,7 @@ class ProfileScreen2 : AppCompatActivity() {
                             sendOtp(mail,code.toString())
                         }
                     }
-                    Toast.makeText(this, "Profile updated! Security code sent ${code}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Profile updated! Security code sent Check your mail", Toast.LENGTH_SHORT).show()
                 }
                     .addOnFailureListener { e ->
                         Toast.makeText(this, "Failed: ${e.message}", Toast.LENGTH_SHORT).show()
