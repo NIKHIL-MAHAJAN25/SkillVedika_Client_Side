@@ -1,5 +1,7 @@
 package com.nikhil.buyerapp.basichome
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
@@ -34,118 +36,214 @@ class hosthome : AppCompatActivity() {
     private val db = Firebase.firestore
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        getSharedPreferences("hints", Context.MODE_PRIVATE).edit().clear().apply()
         PDFBoxResourceLoader.init(applicationContext)
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
         window.statusBarColor = android.graphics.Color.TRANSPARENT
         binding=ActivityHosthomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        ViewCompat.setOnApplyWindowInsetsListener(binding.host) { view, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val statusBars = insets.getInsets(WindowInsetsCompat.Type.statusBars())
-
-            view.setPadding(
-                statusBars.left,
-                statusBars.top,
-                statusBars.right,
-                0
-            )
-
+            v.setPadding(0, statusBars.top, 0, 0)
             insets
         }
 
 
 
 
-        val bottomnav=binding.bottomNavigation.layoutParams
-        bottomnav.height=resources.getDimensionPixelSize(R.dimen.bottom_nav_height)
-        binding.bottomNavigation.layoutParams=bottomnav
+
+
         val navHostFragment=supportFragmentManager
             .findFragmentById(R.id.host) as NavHostFragment
         val navController:NavController=navHostFragment.navController
         binding.bottomNavigation.setupWithNavController(navController)
-        checkprof()
+
         // 3. Setup the BottomNavigationView with the NavController
         // (Also, use your binding variable instead of findViewById for consistency)
-        val topLevelDestinations = setOf(
-            R.id.home,
-            R.id.chat,
-            R.id.orders
 
-        )
 
         // 4. Listen for navigation changes
         navController.addOnDestinationChangedListener { _, destination, _ ->
-            if (destination.id in topLevelDestinations) {
-                // If we are on a main screen, FORCE the bar to show
-                showBottomNav()
-            } else {
-                // If we are on a detail screen (Post Job, Chat), hide it
-                hideBottomNav()
+            when (destination.id) {
+                R.id.home,
+                R.id.chat,
+                R.id.orders -> showBottomNav()
+                else -> hideBottomNav()
             }
         }
+        val prefs = getSharedPreferences("hints", MODE_PRIVATE)
+        showHintsInSequence(prefs)
+        }
+
+    private fun showHintsInSequence(prefs: SharedPreferences) {
+        binding.bottomNavigation.post {
+            val menu = binding.bottomNavigation.getChildAt(0) as? ViewGroup ?: return@post
+            val homeshown= prefs.getBoolean("home_hint_shows",false)
+            val aiShown = prefs.getBoolean("ai_hint_shown", false)
+            val profileShown = prefs.getBoolean("freelancer_full_profile_hint_shown", false)
+            val ordershown = prefs.getBoolean("order_hint_shows",false)
+            val chatshown = prefs.getBoolean("chat_hint_shows",false)
 
 
 
 
-    }
-    private fun checkprof() {
-        val uid = auth.currentUser?.uid
-        if (uid != null) {
-            lifecycleScope.launch {
-                try {
-                    val docu = db.collection("Freelancers").document(uid).get().await()
-                    val ans = docu.getBoolean("profcomp") ?: false
-                    if (!ans && binding.bottomNavigation.visibility == View.VISIBLE) {
-                        showprofilemark()
-                    }
-                }catch (e:Exception){
-                    e.printStackTrace()
-                }
+            when {
+                !homeshown -> showHomeHint(prefs, menu)
+                !chatshown -> showChatHint(prefs, menu)
+                !ordershown -> showOrderHint(prefs, menu)
+                !aiShown -> showAiHint(prefs, menu)
+                !profileShown -> showProfileHint(prefs, menu)
             }
         }
     }
-    private fun showprofilemark() {
+    private fun showHomeHint(prefs: SharedPreferences, menu: ViewGroup) {
+        val aiTarget = menu.getChildAt(0) ?: return  // index 3 = AI/Gemini
 
-        val prefs = getSharedPreferences("hints", MODE_PRIVATE)//for anti nagging
-        val shownBefore = prefs.getBoolean("freelancer_full_profile_hint_shown", false)//pllay only one time
-        if (shownBefore)
-            return
-        if (binding.bottomNavigation.visibility != View.VISIBLE) return
-
-        binding.bottomNavigation.post{
-            val menu = binding.bottomNavigation.getChildAt(0) as? ViewGroup ?: return@post//gets all the frags as a view group
-            val profile = menu.childCount - 1//last index ie profile
-            val target = menu.getChildAt(profile) ?: return@post//target profile
-            TapTargetView.showFor(
-                this@hosthome,
-                TapTarget.forView(
-                    target,
-                    "Complete your Profile",
-                    "Add your skills, experience, level and rate to start getting orders "
-                )
-                    .outerCircleColor(R.color.black)
-                    .outerCircleAlpha(0.85f)
-                    .targetCircleColor(android.R.color.white)
-                    .titleTextColor(android.R.color.white)
-                    .descriptionTextColor(android.R.color.white)
-                    .tintTarget(true)
-                    .drawShadow(true)
-                    .cancelable(false)
-                    .id(202)
-
+        TapTargetView.showFor(
+            this@hosthome,
+            TapTarget.forView(
+                aiTarget,
+                "Start Exploring",
+                "Find services, discover opportunities, and keep up with industry news all in one place."
             )
-
+                .outerCircleColor(R.color.black)
+                .outerCircleAlpha(0.85f)
+                .targetCircleColor(android.R.color.white)
+                .titleTextColor(android.R.color.white)
+                .descriptionTextColor(android.R.color.white)
+                .tintTarget(true)
+                .drawShadow(true)
+                .cancelable(false)
+                .id(201),
             object : TapTargetView.Listener() {
                 override fun onTargetClick(view: TapTargetView) {
                     super.onTargetClick(view)
-                    // Navigate to Profile tab (adjust id if needed)
-                    binding.bottomNavigation.selectedItemId = R.id.profile
-                    // Mark hint as shown so it won’t reappear
-                    prefs.edit().putBoolean("freelancer_full_profile_hint_shown", true)
-                        .apply()
+                    prefs.edit().putBoolean("home_hint_shows", true).apply()
+                    // Show profile hint right after AI hint is dismissed
+                   showChatHint(prefs,menu)
                 }
             }
-        }
+        )
+    }
+    private fun showChatHint(prefs: SharedPreferences, menu: ViewGroup) {
+        val aiTarget = menu.getChildAt(1) ?: return  // index 3 = AI/Gemini
+
+        TapTargetView.showFor(
+            this@hosthome,
+            TapTarget.forView(
+                aiTarget,
+                "Connect with People",
+                "All your conversations appear here. Reply quickly, discuss project details, and build trust with clients."
+            )
+                .outerCircleColor(R.color.black)
+                .outerCircleAlpha(0.85f)
+                .targetCircleColor(android.R.color.white)
+                .titleTextColor(android.R.color.white)
+                .descriptionTextColor(android.R.color.white)
+                .tintTarget(true)
+                .drawShadow(true)
+                .cancelable(false)
+                .id(201),
+            object : TapTargetView.Listener() {
+                override fun onTargetClick(view: TapTargetView) {
+                    super.onTargetClick(view)
+                    prefs.edit().putBoolean("chat_hint_shows", true).apply()
+                    // Show profile hint right after AI hint is dismissed
+                    showOrderHint(prefs, menu)
+                }
+            }
+        )
+    }
+    private fun showOrderHint(prefs: SharedPreferences, menu: ViewGroup) {
+        val aiTarget = menu.getChildAt(2) ?: return  // index 3 = AI/Gemini
+
+        TapTargetView.showFor(
+            this@hosthome,
+            TapTarget.forView(
+                aiTarget,
+                "Manage Your Projects",
+                "Track all your projects here. Use the tabs to view Open, In Progress, Completed, and Cancelled work."
+            )
+                .outerCircleColor(R.color.black)
+                .outerCircleAlpha(0.85f)
+                .targetCircleColor(android.R.color.white)
+                .titleTextColor(android.R.color.white)
+                .descriptionTextColor(android.R.color.white)
+                .tintTarget(true)
+                .drawShadow(true)
+                .cancelable(false)
+                .id(201),
+            object : TapTargetView.Listener() {
+                override fun onTargetClick(view: TapTargetView) {
+                    super.onTargetClick(view)
+                    prefs.edit().putBoolean("order_hint_shows", true).apply()
+                    // Show profile hint right after AI hint is dismissed
+                    showAiHint(prefs, menu)
+                }
+            }
+        )
+    }
+
+    private fun showAiHint(prefs: SharedPreferences, menu: ViewGroup) {
+        val aiTarget = menu.getChildAt(3) ?: return  // index 3 = AI/Gemini
+
+        TapTargetView.showFor(
+            this@hosthome,
+            TapTarget.forView(
+                aiTarget,
+                "AI assisted Hiring",
+                "Smart Matching, Project Insights and much More"
+            )
+                .outerCircleColor(R.color.black)
+                .outerCircleAlpha(0.85f)
+                .targetCircleColor(android.R.color.white)
+                .titleTextColor(android.R.color.white)
+                .descriptionTextColor(android.R.color.white)
+                .tintTarget(true)
+                .drawShadow(true)
+                .cancelable(false)
+                .id(201),
+            object : TapTargetView.Listener() {
+                override fun onTargetClick(view: TapTargetView) {
+                    super.onTargetClick(view)
+                    prefs.edit().putBoolean("ai_hint_shown", true).apply()
+                    showProfileHint(prefs, menu)
+
+                }
+            }
+        )
+    }
+
+    private fun showProfileHint(prefs: SharedPreferences, menu: ViewGroup) {
+        val profileTarget = menu.getChildAt(4) ?: return  // index 4 = Profile
+
+        TapTargetView.showFor(
+            this@hosthome,
+            TapTarget.forView(
+                profileTarget,
+                "Complete your Profile",
+                "Add your Company Name and Payment Methods"
+            )
+                .outerCircleColor(R.color.black)
+                .outerCircleAlpha(0.85f)
+                .targetCircleColor(android.R.color.white)
+                .titleTextColor(android.R.color.white)
+                .descriptionTextColor(android.R.color.white)
+                .tintTarget(true)
+                .drawShadow(true)
+                .cancelable(false)
+                .id(202),
+            object : TapTargetView.Listener() {
+                override fun onTargetClick(view: TapTargetView) {
+                    super.onTargetClick(view)
+                    prefs.edit()
+                        .putBoolean("freelancer_full_profile_hint_shown", true)
+                        .apply()
+
+                }
+            }
+        )
     }
 
 

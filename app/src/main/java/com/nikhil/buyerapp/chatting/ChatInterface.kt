@@ -10,6 +10,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.updatePadding
+import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.Firebase
@@ -21,6 +22,7 @@ import com.nikhil.buyerapp.databinding.FragmentFreeLanceSearchBinding
 import com.nikhil.buyerapp.dataclasses.Chat
 import com.nikhil.buyerapp.dataclasses.Message
 import com.nikhil.buyerapp.utils.snack
+
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -95,7 +97,24 @@ class ChatInterface : Fragment() {
         setupinfo()
         setupRecycler()
         listenForMessages()
+        binding.tvName.setOnClickListener {
+            val bundle = Bundle().apply{
+                putString("uid", receiverUid)
 
+            }
+            findNavController().navigate(
+                R.id.scaffold,bundle
+            )
+        }
+        binding.ivProfileImage.setOnClickListener {
+            val bundle = Bundle().apply{
+                putString("uid", receiverUid)
+
+            }
+            findNavController().navigate(
+                R.id.scaffold,bundle
+            )
+        }
         binding.btnSend.setOnClickListener {
             if(!binding.etMessage.text.isNullOrBlank() || !binding.etMessage.text.trim().isEmpty()) {
                 val text = binding.etMessage.text.trim().toString()

@@ -50,6 +50,7 @@
                     android:id="@+id/ivProfileImage"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:clickable="true"
                     android:scaleType="centerCrop"
                     tools:src="@tools:sample/avatars" />
             </com.google.android.material.card.MaterialCardView>
@@ -60,6 +61,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Nikhil Mahajan"
+                android:clickable="true"
                 android:textColor="@android:color/white"
                 android:textSize="18sp"
                 android:textStyle="bold" />
