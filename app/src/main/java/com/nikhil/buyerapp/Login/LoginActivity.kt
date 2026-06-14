@@ -87,7 +87,7 @@ class LoginActivity : AppCompatActivity() {
                         }
                     }
                 }.addOnFailureListener {
-                    showtoast("Enter the credentials correctly")
+                    Snackbar.make(binding.root,"Account Doesn't exist or Credentials are Wrong",Snackbar.LENGTH_SHORT).setAnchorView(binding.btnSignin).show()
                 }
             }
         }

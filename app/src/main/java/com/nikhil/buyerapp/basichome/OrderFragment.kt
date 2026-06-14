@@ -16,10 +16,12 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.nikhil.buyerapp.R
-import com.nikhil.buyerapp.databinding.DialogAssignFreelancerBinding
+import com.nikhil.buyerapp.databinding.DialogAssignFromChatsBinding
 import com.nikhil.buyerapp.databinding.FragmentOrderBinding
 import com.nikhil.buyerapp.dataclasses.Project
 import com.nikhil.buyerapp.dataclasses.ProjectStatus
+import com.nikhil.buyerapp.displayingorders.FreelancerItem
+import com.nikhil.buyerapp.displayingorders.FreelancerSelectAdapter
 import com.nikhil.buyerapp.displayingorders.OrderAdapter
 
 class OrderFragment : Fragment() {
@@ -85,64 +87,119 @@ class OrderFragment : Fragment() {
     }
 
     private fun showAssignDialog(project: Project) {
-        val dialogBinding = DialogAssignFreelancerBinding.inflate(layoutInflater)
+        if (!isAdded) return
+        val dialogBinding = DialogAssignFromChatsBinding.inflate(layoutInflater)
 
         val dialog = AlertDialog.Builder(requireContext())
             .setView(dialogBinding.root)
             .create()
 
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        dialogBinding.btnCancel.setOnClickListener { dialog.dismiss() }
+        dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
+        dialog.show()
 
-        // change hint to email in your dialog XML too
-        dialogBinding.etFreelancerUid.hint = "Freelancer Email"
+        val uid = auth.currentUser?.uid ?: run {
+            dialog.dismiss()
+            return
+        }
 
-        dialogBinding.btnAssign.setOnClickListener {
-            val name = dialogBinding.etFreelancerName.text.toString().trim()
-            val email = dialogBinding.etFreelancerUid.text.toString().trim()
+        db.collection("Chat")
+            .whereArrayContains("participants", uid)
+            .get()
+            .addOnSuccessListener { chatDocs ->
+                if (_binding == null || !isAdded) {
+                    dialog.dismiss()
+                    return@addOnSuccessListener
+                }
 
-            if (name.isEmpty() || email.isEmpty()) {
-                Toast.makeText(requireContext(), "Fill in both fields", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
+                if (chatDocs.isEmpty) {
+                    dialogBinding.progressBar.visibility = View.GONE
+                    dialogBinding.tvEmpty.visibility = View.VISIBLE
+                    return@addOnSuccessListener
+                }
 
-            // look up UID from Users collection by email
-            db.collection("Users")
-                .whereEqualTo("email", email)
-                .limit(1)
-                .get()
-                .addOnSuccessListener { userDocs ->
-                    if (userDocs.isEmpty) {
-                        Toast.makeText(requireContext(), "No freelancer found with that email", Toast.LENGTH_SHORT).show()
-                        return@addOnSuccessListener
+                // Unique UIDs of everyone this buyer has chatted with
+                val otherUids = chatDocs.documents
+                    .mapNotNull { doc ->
+                        val participants = doc.get("participants") as? List<*>
+                        participants?.filterIsInstance<String>()?.firstOrNull { it != uid }
                     }
+                    .distinct()
 
-                    val actualUid = userDocs.documents[0].id  // document ID is the UID
+                if (otherUids.isEmpty()) {
+                    dialogBinding.progressBar.visibility = View.GONE
+                    dialogBinding.tvEmpty.visibility = View.VISIBLE
+                    return@addOnSuccessListener
+                }
 
-                    db.collection("Projects").document(project.projectid)
-                        .update(
-                            "status", ProjectStatus.ASSIGNED.name,
-                            "freeuid", actualUid,          // real UID now
-                            "freename", name,
-                            "freeemail", email,            // store email separately too
-                            "startedAt", FieldValue.serverTimestamp()
-                        )
-                        .addOnSuccessListener {
-                            Toast.makeText(requireContext(), "Freelancer assigned!", Toast.LENGTH_SHORT).show()
-                            dialog.dismiss()
+                val freelancers = mutableListOf<FreelancerItem>()
+                var pending = otherUids.size
+
+                otherUids.forEach { otherUid ->
+                    db.collection("Users").document(otherUid).get()
+                        .addOnSuccessListener { userDoc ->
+                            val name = userDoc.getString("fullName") ?: "Unknown"
+                            val email = userDoc.getString("email") ?: ""
+                            val image = userDoc.getString("profilePictureUrl") ?: ""
+                            freelancers.add(FreelancerItem(otherUid, name, email, image))
+                            pending--
+                            if (pending == 0) showFreelancerList(dialogBinding, freelancers, project, dialog)
                         }
-                        .addOnFailureListener { e ->
-                            Log.e("ASSIGN", "Failed to assign", e)
-                            Toast.makeText(requireContext(), "Failed to assign", Toast.LENGTH_SHORT).show()
+                        .addOnFailureListener {
+                            pending--
+                            if (pending == 0) showFreelancerList(dialogBinding, freelancers, project, dialog)
                         }
                 }
+            }
+            .addOnFailureListener { e ->
+                if (_binding == null || !isAdded) return@addOnFailureListener
+                Log.e("ASSIGN", "Chat fetch failed", e)
+                dialogBinding.progressBar.visibility = View.GONE
+                dialogBinding.tvEmpty.visibility = View.VISIBLE
+            }
+    }
+
+    private fun showFreelancerList(
+        dialogBinding: DialogAssignFromChatsBinding,
+        freelancers: List<FreelancerItem>,
+        project: Project,
+        dialog: AlertDialog
+    ) {
+        if (_binding == null || !isAdded) {
+            dialog.dismiss()
+            return
+        }
+
+        dialogBinding.progressBar.visibility = View.GONE
+
+        if (freelancers.isEmpty()) {
+            dialogBinding.tvEmpty.visibility = View.VISIBLE
+            return
+        }
+
+        val selectAdapter = FreelancerSelectAdapter(freelancers) { selected ->
+            db.collection("Projects").document(project.projectid)
+                .update(
+                    "status", ProjectStatus.ASSIGNED.name,
+                    "freeuid", selected.uid,
+                    "freename", selected.name,
+                    "freeemail", selected.email,
+                    "startedAt", FieldValue.serverTimestamp()
+                )
+                .addOnSuccessListener {
+                    if (isAdded) Toast.makeText(requireContext(), "Freelancer assigned!", Toast.LENGTH_SHORT).show()
+                    dialog.dismiss()
+                }
                 .addOnFailureListener { e ->
-                    Log.e("ASSIGN", "User lookup failed", e)
-                    Toast.makeText(requireContext(), "Lookup failed", Toast.LENGTH_SHORT).show()
+                    Log.e("ASSIGN", "Update failed", e)
+                    if (isAdded) Toast.makeText(requireContext(), "Failed to assign", Toast.LENGTH_SHORT).show()
                 }
         }
 
-        dialog.show()
+        dialogBinding.rvFreelancers.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = selectAdapter
+            visibility = View.VISIBLE
+        }
     }
 
     private fun confirmAndUpdate(
@@ -190,7 +247,26 @@ class OrderFragment : Fragment() {
             3 -> ProjectStatus.CANCELLED.name
             else -> ProjectStatus.OPEN.name
         }
-        adapter.submitList(allProjects.filter { it.status == status })
+        val filtered = allProjects.filter { it.status == status }
+        adapter.submitList(filtered)
+        if (filtered.isEmpty()) {
+            val (title, sub) = when (tabPosition) {
+                0 -> Pair("No Open Projects", "Tap + to post a new project")
+                1 -> Pair("No Projects In Progress", "Assign a freelancer to get started")
+                2 -> Pair("No Completed Projects", "Completed projects will appear here")
+                3 -> Pair("No Cancelled Projects", "Hope it stays that way!")
+                else -> Pair("No Projects Yet", "Tap + to post a new project")
+            }
+            binding.tvEmpty.text = title
+            binding.tvEmptySub.text = sub
+            binding.tvEmpty.visibility = View.VISIBLE
+            binding.tvEmptySub.visibility = View.VISIBLE
+            binding.projectrecycler.visibility = View.GONE
+        } else {
+            binding.tvEmpty.visibility = View.GONE
+            binding.tvEmptySub.visibility = View.GONE
+            binding.projectrecycler.visibility = View.VISIBLE
+        }
     }
 
     private fun loadProjects() {

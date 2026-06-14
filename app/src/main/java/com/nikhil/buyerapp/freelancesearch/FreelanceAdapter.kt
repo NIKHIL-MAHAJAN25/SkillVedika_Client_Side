@@ -27,7 +27,7 @@ class FreelanceAdapter(private val onclicked:(FreelancerItem)->Unit,private val 
                 .into(binding.ivProfileImage)
             binding.tvPrimarySkill.text=service.primaryskill
             binding.tvratings.text=service.rating.toString()
-            binding.tvProjectRate.text= service.projectRate.toString()?: "Negotiable"
+            binding.tvProjectRate.text = if (service.projectRate != null) "₹${service.projectRate}/hour" else "Negotiable"
             binding.root.setOnClickListener {
                 onclicked(service)
             }

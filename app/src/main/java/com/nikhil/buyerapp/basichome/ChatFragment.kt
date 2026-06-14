@@ -100,8 +100,9 @@ class ChatFragment : Fragment() {
                 if (chats.isEmpty()) {
                     binding.chatShimmer.stopShimmer()
                     binding.chatShimmer.visibility = View.GONE
-
-                    binding.chatlist.visibility = View.VISIBLE
+                    binding.chatlist.visibility = View.GONE
+                    binding.tvEmpty.visibility = View.VISIBLE
+                    binding.tvEmptySub.visibility = View.VISIBLE
                     adapter.submitList(emptyList())
                     return@addSnapshotListener
                 }
@@ -138,11 +139,12 @@ class ChatFragment : Fragment() {
                                 if (pending == 0) {
                                     adapter.setUserInfo(userMap)
                                     adapter.submitList(ArrayList(chats))
-                                    // Same guard here
-                                    _binding?.let { b ->
-                                        b.chatShimmer.stopShimmer()
-                                        b.chatShimmer.visibility = View.GONE
-                                        b.chatlist.visibility = View.VISIBLE
+                                    _binding?.let {
+                                        it.chatShimmer.stopShimmer()
+                                        it.chatShimmer.visibility = View.GONE
+                                        it.chatlist.visibility = View.VISIBLE
+                                        it.tvEmpty.visibility = View.GONE
+                                        it.tvEmptySub.visibility = View.GONE
                                     }
                                 }
                             }

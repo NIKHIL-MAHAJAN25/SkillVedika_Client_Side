@@ -114,7 +114,8 @@ class ScaffoldFragment : Fragment() {
                     if (snapshot != null && snapshot.exists()) {
                         val user = snapshot.toObject<Freelancer>()
                         b.tvtitle.setText(user?.primaryskill)
-                        b.tvrate.setText(user?.projectRate.toString()+"/hour")
+                        val rate = user?.projectRate ?: 0.0
+                        b.tvrate.text = "₹$rate/hour"
                     }
                 }
         }
