@@ -79,7 +79,16 @@ class OrderFragment : Fragment() {
                     project = project,
                     newStatus = ProjectStatus.CANCELLED.name
                 )
+            },
+            onLeaveReview = { project ->
+                val bundle = Bundle().apply {
+                    putString("uid", project.freeuid ?: "")
+                    putString("freeName", project.freename ?: "Freelancer")
+                    putString("projectId", project.projectid)
+                }
+                findNavController().navigate(R.id.review, bundle)
             }
+
         )
         binding.projectrecycler.layoutManager = LinearLayoutManager(requireContext())
         binding.projectrecycler.isNestedScrollingEnabled = false

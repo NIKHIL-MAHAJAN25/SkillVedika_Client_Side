@@ -15,7 +15,9 @@ class OrderAdapter(
     private val onClicked: (Project) -> Unit,
     private val onAssignFreelancer: (Project) -> Unit,
     private val onMarkCompleted: (Project) -> Unit,
-    private val onCancelProject: (Project) -> Unit
+    private val onCancelProject: (Project) -> Unit,
+    private val onLeaveReview: (Project) -> Unit
+
 ) : ListAdapter<Project, OrderAdapter.ViewHolder>(ServiceDiffCallback()) {
 
     inner class ViewHolder(private val binding: OrderItemBinding) :
@@ -55,7 +57,9 @@ class OrderAdapter(
                         popup.menu.add(0, 2, 0, "Mark as Completed")
                         popup.menu.add(0, 3, 1, "Cancel Project")
                     }
-                    ProjectStatus.COMPLETED.name,
+                    ProjectStatus.COMPLETED.name-> {
+                        popup.menu.add(0,0,0,"Leave a Review")
+                    }
                     ProjectStatus.CANCELLED.name -> {
                         popup.menu.add(0, 0, 0, "No actions available")
                     }
@@ -63,6 +67,7 @@ class OrderAdapter(
 
                 popup.setOnMenuItemClickListener { item ->
                     when (item.itemId) {
+                        0 -> onLeaveReview(project)
                         1 -> onAssignFreelancer(project)
                         2 -> onMarkCompleted(project)
                         3 -> onCancelProject(project)

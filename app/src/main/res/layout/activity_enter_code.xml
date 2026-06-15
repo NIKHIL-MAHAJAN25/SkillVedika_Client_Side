@@ -305,5 +305,21 @@
             android:textColor="#698B6A"
             android:textStyle="bold" />
     </LinearLayout>
+    <TextView
+        android:id="@+id/line1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@+id/line2"
+        app:layout_constraintStart_toEndOf="@+id/vguide1"
+        android:text="Can't find the email?"
+        app:layout_constraintEnd_toStartOf="@+id/vguide2"/>
+    <TextView
+        android:id="@+id/line2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@+id/hguide2"
+        app:layout_constraintStart_toEndOf="@+id/vguide1"
+        android:text="Please check your Spam or Junk folder"
+        app:layout_constraintEnd_toStartOf="@+id/vguide2"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

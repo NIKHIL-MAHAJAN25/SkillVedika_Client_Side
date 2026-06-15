@@ -32,6 +32,9 @@ class   EnterCode : AppCompatActivity() {
     val auid=auth.currentUser?.uid
     val db=Firebase.firestore
     var email:String?=null;
+    // at the top of the class, add these two properties
+    private var countDownTimer: android.os.CountDownTimer? = null
+    private var isTimerRunning = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -78,30 +81,27 @@ class   EnterCode : AppCompatActivity() {
             })
         }
         binding.btnResendCode.setOnClickListener {
+            if (isTimerRunning) return@setOnClickListener
 
-                if (auid != null) {
-
-                    generate { code->
-                        val user= mapOf(
-                            "security" to code
-                        )
-                        db.collection("Users").document(auid).update(user).addOnSuccessListener {
-                            fetchmail(auid){mail->
-                                if (mail != null) {
-                                    sendOtp(mail,code.toString())
-                                }
+            if (auid != null) {
+                generate { code ->
+                    val user = mapOf("approvalCode" to code)
+                    db.collection("Users")
+                        .document(auid)
+                        .update(user)
+                        .addOnSuccessListener {
+                            fetchmail(auid) { mail ->
+                                if (mail != null) sendOtp(mail, code.toString())
                             }
                             Toast.makeText(this, "Security code sent on your mail", Toast.LENGTH_SHORT).show()
                         }
-                            .addOnFailureListener { e ->
-                                Toast.makeText(this, "Failed: ${e.message}", Toast.LENGTH_SHORT).show()
-                            }
-                    }
-
-                } else {
-                    Toast.makeText(this, "User not authenticated", Toast.LENGTH_SHORT).show()
+                        .addOnFailureListener { e ->
+                            Toast.makeText(this, "Failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
                 }
+            }
 
+            startResendCooldown()
         }
 
 
@@ -166,6 +166,22 @@ class   EnterCode : AppCompatActivity() {
                     onResult(null)
                 }
             }
+    }
+    private fun startResendCooldown() {
+        isTimerRunning = true
+        binding.btnResendCode.isEnabled = false
+
+        countDownTimer = object : android.os.CountDownTimer(30_000L, 1_000L) {
+            override fun onTick(millisUntilFinished: Long) {
+                val seconds = millisUntilFinished / 1000
+                binding.btnResendCode.text = "Resend in ${seconds}s"
+            }
+            override fun onFinish() {
+                isTimerRunning = false
+                binding.btnResendCode.isEnabled = true
+                binding.btnResendCode.text = "Resend Code"
+            }
+        }.start()
     }
     private fun fetchmail(uid:String,onResult: (String?) -> Unit)
     {

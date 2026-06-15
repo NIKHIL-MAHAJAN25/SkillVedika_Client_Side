@@ -66,53 +66,7 @@ android {
     }
 }
 
-//dependencies {
-//    implementation("com.tom-roush:pdfbox-android:2.0.27.0")
-//    implementation("com.google.ai.client.generativeai:generativeai:0.12.0")
-//
-//
-//    implementation("io.noties.markwon:core:4.6.2")
-//    implementation("com.getkeepsafe.taptargetview:taptargetview:1.13.3")
-//    implementation("io.ktor:ktor-client-apache5:3.1.3")
-//    implementation("io.ktor:ktor-client-core:3.1.3")
-//    implementation("io.ktor:ktor-client-okhttp:3.1.3")
-//    implementation("io.ktor:ktor-client-apache5:3.1.3")
-//    implementation("io.ktor:ktor-client-content-negotiation:3.1.3")
-//    implementation("io.ktor:ktor-serialization-kotlinx-json:3.1.3")
-//    implementation("io.ktor:ktor-client-logging:3.1.3")
-//    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-//    // Retrofit for networking (to call Brandfetch API)
-//    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-//    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-//    //supabase storage
-//    implementation("com.airbnb.android:lottie:6.0.0")
-//
-//    implementation(platform("io.github.jan-tennert.supabase:bom:3.0.2"))
-//    implementation ("io.github.jan-tennert.supabase:storage-kt:3.0.2")
-//    //glide
-//    implementation ("com.github.bumptech.glide:glide:4.11.0")
-//    implementation(libs.firebase.firestore)
-//    implementation(libs.androidx.navigation.fragment.ktx)
-//    implementation(libs.androidx.navigation.ui.ktx)
-//    implementation(libs.androidx.lifecycle.livedata.ktx)
-//    implementation(libs.androidx.lifecycle.viewmodel.ktx)
-//    implementation(libs.androidx.recyclerview)
-//    implementation(libs.androidx.recyclerview)
-//    annotationProcessor ("com.github.bumptech.glide:compiler:4.11.0")
-//    implementation("com.hbb20:ccp:2.6.1")
-//    implementation("androidx.viewpager2:viewpager2:1.0.0")
-//    implementation("com.caverock:androidsvg:1.4")
-//    implementation("com.google.android.material:material:1.11.0")
-//    implementation(libs.androidx.core.ktx)
-//    implementation(libs.androidx.appcompat)
-//    implementation(libs.material)
-//    implementation(libs.androidx.activity)
-//    implementation(libs.androidx.constraintlayout)
-//    implementation(libs.firebase.auth)
-//    testImplementation(libs.junit)
-//    androidTestImplementation(libs.androidx.junit)
-//    androidTestImplementation(libs.androidx.espresso.core)
-//}
+
 dependencies {
     implementation("com.facebook.shimmer:shimmer:0.5.0")
     // 1. PDF & Markdown Tools

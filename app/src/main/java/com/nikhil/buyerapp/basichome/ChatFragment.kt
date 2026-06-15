@@ -118,23 +118,17 @@ class ChatFragment : Fragment() {
                             .document(otherUserId)
                             .get()
                             .addOnSuccessListener { userDoc ->
-                                val name = userDoc.getString("fullName") ?: ""
-                                val image = userDoc.getString("profilePictureUrl") ?: ""
-                                userMap[otherUserId] = Pair(name, image)
-                                pending--
-                                // Only submit once ALL user fetches are done
-                                if (pending == 0) {
-                                    adapter.setUserInfo(userMap)
-                                    adapter.submitList(ArrayList(chats))
-                                    // Guard: view may be gone by the time this fires
-                                    _binding?.let {
-                                        it.chatShimmer.stopShimmer()
-                                        it.chatShimmer.visibility = View.GONE
-                                        it.chatlist.visibility = View.VISIBLE
-                                    }
+                                val name = if (userDoc.exists()) {
+                                    userDoc.getString("fullName") ?: "Unknown"
+                                } else {
+                                    "Deleted Account"
                                 }
-                            }
-                            .addOnFailureListener {
+                                val image = if (userDoc.exists()) {
+                                    userDoc.getString("profilePictureUrl") ?: ""
+                                } else {
+                                    "" // will show placeholder in Glide
+                                }
+                                userMap[otherUserId] = Pair(name, image)
                                 pending--
                                 if (pending == 0) {
                                     adapter.setUserInfo(userMap)
@@ -145,6 +139,20 @@ class ChatFragment : Fragment() {
                                         it.chatlist.visibility = View.VISIBLE
                                         it.tvEmpty.visibility = View.GONE
                                         it.tvEmptySub.visibility = View.GONE
+                                    }
+                                }
+                            }
+                            .addOnFailureListener {
+                                // treat fetch failure same as deleted
+                                userMap[otherUserId] = Pair("Deleted Account", "")
+                                pending--
+                                if (pending == 0) {
+                                    adapter.setUserInfo(userMap)
+                                    adapter.submitList(ArrayList(chats))
+                                    _binding?.let {
+                                        it.chatShimmer.stopShimmer()
+                                        it.chatShimmer.visibility = View.GONE
+                                        it.chatlist.visibility = View.VISIBLE
                                     }
                                 }
                             }

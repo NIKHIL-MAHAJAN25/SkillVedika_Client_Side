@@ -191,49 +191,17 @@
             android:layout_weight="1"
             android:background="#495048" />
     </LinearLayout>
-    <LinearLayout
-        android:id="@+id/linear2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/signup">
 
-        <ImageButton
-            android:id="@+id/git"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:scaleType="centerCrop"
-            android:layout_marginEnd="20dp"
-            android:backgroundTint="@android:color/transparent"
-            android:src="@drawable/git"/>
-        <ImageButton
-            android:id="@+id/google"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:scaleType="centerCrop"
-            android:layout_marginEnd="20dp"
-            android:backgroundTint="@android:color/transparent"
-            android:src="@drawable/google_svgrepo_com"/>
-        <ImageButton
-            android:id="@+id/apple"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:scaleType="centerCrop"
-            android:backgroundTint="@android:color/transparent"
-            android:src="@drawable/apple"/>
-    </LinearLayout>
     <LinearLayout
         android:id="@+id/layout1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="5dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/hguide2"
-        app:layout_constraintTop_toBottomOf="@+id/linear2">
+
+        app:layout_constraintTop_toBottomOf="@+id/signup">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
