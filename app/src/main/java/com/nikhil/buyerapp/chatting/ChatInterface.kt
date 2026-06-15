@@ -97,6 +97,9 @@ class ChatInterface : Fragment() {
         setupinfo()
         setupRecycler()
         listenForMessages()
+        binding.btnBack.setOnClickListener{
+            findNavController().navigateUp()
+        }
         binding.tvName.setOnClickListener {
             val bundle = Bundle().apply{
                 putString("uid", receiverUid)

@@ -36,7 +36,7 @@ class hosthome : AppCompatActivity() {
     private val db = Firebase.firestore
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        getSharedPreferences("hints", Context.MODE_PRIVATE).edit().clear().apply()
+//        getSharedPreferences("hints", Context.MODE_PRIVATE).edit().clear().apply()
         PDFBoxResourceLoader.init(applicationContext)
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)

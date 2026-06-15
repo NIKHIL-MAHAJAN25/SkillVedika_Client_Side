@@ -9,9 +9,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -39,6 +39,7 @@ import io.github.jan.supabase.storage.storage
 import io.github.jan.supabase.storage.uploadAsFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 private const val ARG_PARAM1 = "param1"
@@ -50,44 +51,30 @@ class CoreProfileFragment : Fragment() {
     private var param2: String? = null
 
     private val paymentMethods = listOf(
-        "UPI",
-        "PayPal",
-        "Bank Transfer",
-        "Credit Card",
-        "Debit Card",
-        "Crypto",
-        "Net Banking",
-        "Cash"
+        "UPI", "PayPal", "Bank Transfer", "Credit Card",
+        "Debit Card", "Crypto", "Net Banking", "Cash"
     )
 
     private val selectedPayments = mutableListOf<String>()
 
     private var _binding: FragmentProfileBinding? = null
-
     private val binding get() = _binding!!
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
-
     private val uid = auth.currentUser?.uid
     private lateinit var supabaseClient: SupabaseClient
-
     private val db = Firebase.firestore
 
     private lateinit var reviewAdapter: ReviewAdapter
-    private val pickImagelauncher= registerForActivityResult(
+
+    private val pickImageLauncher = registerForActivityResult(
         ActivityResultContracts.PickVisualMedia()
-    )
-    {
-        uri ->
-        if(uri!=null)
-        {
-            uploadImageToSupabase(uri)
-        }
+    ) { uri ->
+        if (uri != null) uploadImageToSupabase(uri)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         arguments?.let {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
@@ -99,223 +86,255 @@ class CoreProfileFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
-        _binding =
-            FragmentProfileBinding.inflate(
-                inflater,
-                container,
-                false
-            )
-
+        _binding = FragmentProfileBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?
-    ) {
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupReviewRecycler()
-
-        loadinfo()
-
-        loadotherinfo()
         supabaseClient = (requireActivity().application as supabasefile).supabaseClient
+
+        setupReviewRecycler()
+        loadinfo()
+        loadotherinfo()
+
         binding.btnEditPhoto.setOnClickListener {
-            pickImagelauncher.launch(
-                PickVisualMediaRequest(
-                    ActivityResultContracts.PickVisualMedia.ImageOnly
-                )
+            pickImageLauncher.launch(
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
             )
         }
 
         binding.btnEditProfile.setOnClickListener {
-
-            findNavController().navigate(
-                R.id.action_prof_to_edit
-            )
+            findNavController().navigate(R.id.action_prof_to_edit)
         }
 
         binding.btnManagePayment.setOnClickListener {
-
             showPaymentMethodsDialog()
         }
 
-        binding.btnLogout.setOnClickListener {
-
-            FirebaseAuth.getInstance().signOut()
-
-            val intent =
-                Intent(
-                    requireContext(),
-                    LoginActivity::class.java
-                )
-
-            intent.flags =
-                Intent.FLAG_ACTIVITY_NEW_TASK or
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK
-
-            startActivity(intent)
-
-            requireActivity().finish()
+        binding.btnSettings.setOnClickListener {
+            showSettingsDialog()
         }
     }
 
-    private fun setupReviewRecycler() {
+    // ─── Settings ────────────────────────────────────────────────────────────
 
-        reviewAdapter = ReviewAdapter()
+    private fun showSettingsDialog() {
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.dialog_settings, null)
 
-        binding.rvRecentReviews.apply {
-
-            adapter = reviewAdapter
-
-            layoutManager =
-                LinearLayoutManager(
-                    requireContext(),
-                    LinearLayoutManager.HORIZONTAL,
-                    false
+        val dialog = android.app.Dialog(requireContext()).apply {
+            setContentView(dialogView)
+            window?.apply {
+                setBackgroundDrawable(
+                    android.graphics.drawable.GradientDrawable().apply {
+                        setColor(android.graphics.Color.WHITE)
+                        cornerRadius = 32f * resources.displayMetrics.density
+                    }
                 )
-
-            isNestedScrollingEnabled = false
+                setLayout(
+                    (resources.displayMetrics.widthPixels * 0.88).toInt(),
+                    android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            }
         }
+
+        dialogView.findViewById<LinearLayout>(R.id.rowLogout).setOnClickListener {
+            dialog.dismiss()
+            logout()
+        }
+
+        dialogView.findViewById<LinearLayout>(R.id.rowDeleteAccount).setOnClickListener {
+            dialog.dismiss()
+            showDeleteConfirmationDialog()
+        }
+
+        dialog.show()
     }
-    private fun uploadImageToSupabase(uri: Uri) {
 
-        val byteArray = uriToByteArray(requireContext(), uri)
+    private fun logout() {
+        auth.signOut()
+        navigateToLogin()
+    }
 
-        if (byteArray.size > 5 * 1024 * 1024) {
+    private fun showDeleteConfirmationDialog() {
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.dialog_delete_confirm, null)
 
-            Toast.makeText(
-                requireContext(),
-                "Image must be under 5 MB",
-                Toast.LENGTH_SHORT
-            ).show()
+        val dialog = android.app.Dialog(requireContext()).apply {
+            setContentView(dialogView)
+            window?.apply {
+                setBackgroundDrawable(
+                    android.graphics.drawable.GradientDrawable().apply {
+                        setColor(android.graphics.Color.WHITE)
+                        cornerRadius = 32f * resources.displayMetrics.density
+                    }
+                )
+                setLayout(
+                    (resources.displayMetrics.widthPixels * 0.88).toInt(),
+                    android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            }
+        }
 
+        val etPassword = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etPasswordinside)
+
+        dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnCancel)
+            .setOnClickListener { dialog.dismiss() }
+
+        dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnDeleteConfirminside)
+            .setOnClickListener {
+                val password = etPassword.text.toString().trim()
+                if (password.isEmpty()) {
+                    Toast.makeText(requireContext(), "Enter your password", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                dialog.dismiss()
+                deleteAccountCascade(password)
+            }
+
+        dialog.show()
+    }
+
+    private fun deleteAccountCascade(password: String) {
+        val currentUid = uid ?: run {
+            Toast.makeText(requireContext(), "Not signed in", Toast.LENGTH_SHORT).show()
             return
         }
 
-        binding.btnEditPhoto.isEnabled = false
-        val fileName = "uploads/${System.currentTimeMillis()}.jpg"
+        val currentUser = auth.currentUser ?: run {
+            Toast.makeText(requireContext(), "Not signed in", Toast.LENGTH_SHORT).show()
+            return
+        }
 
-        val bucket = supabaseClient.storage.from("sample") // Choose your bucket name
+        val email = currentUser.email ?: run {
+            Toast.makeText(requireContext(), "Email not found", Toast.LENGTH_SHORT).show()
+            return
+        }
 
-        // Use lifecycleScope for safe coroutine usage
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                // Upload image and handle the response
-                bucket.uploadAsFlow(fileName, byteArray).collect { status ->
-                    withContext(Dispatchers.Main) {
-                        when (status) {
-                            is UploadStatus.Progress -> {
-//                                val progress = (status.totalBytesSent.toFloat() / status.contentLength * 100)
-                                Log.d("Upload", "Progress%")
-                            }
+                // 0. Re-authenticate first — required before delete
+                val credential = com.google.firebase.auth.EmailAuthProvider
+                    .getCredential(email, password)
+                currentUser.reauthenticate(credential).await()
 
-                            is UploadStatus.Success -> {
+                // 1. Delete Projects where clientuid == uid
+                val projects = db.collection("Projects")
+                    .whereEqualTo("clientuid", currentUid)
+                    .get()
+                    .await()
 
-                                binding.btnEditPhoto.isEnabled = true
+                projects.documents.chunked(500).forEach { chunk ->
+                    val batch = db.batch()
+                    chunk.forEach { batch.delete(it.reference) }
+                    batch.commit().await()
+                }
 
-                                Log.d("Upload ", "Upload Success")
+                // 2. Delete Chats where uid is a participant
+                val chats = db.collection("Chats")
+                    .whereArrayContains("participants", currentUid)
+                    .get()
+                    .await()
 
-                                handleUploadSuccess(bucket, fileName)
-                            }
+                chats.documents.chunked(500).forEach { chunk ->
+                    val batch = db.batch()
+                    chunk.forEach { batch.delete(it.reference) }
+                    batch.commit().await()
+                }
 
+                // 3. Delete Client document
+                db.collection("Client").document(currentUid).delete().await()
+
+                // 4. Grab profile picture URL before deleting Users doc
+                val userSnapshot = db.collection("Users").document(currentUid).get().await()
+                val profilePicUrl = userSnapshot.getString("profilePictureUrl")
+
+                // 5. Delete Users document
+                db.collection("Users").document(currentUid).delete().await()
+
+                // 6. Delete Supabase profile image if present
+                profilePicUrl?.let { url ->
+                    try {
+                        val filePath = url.substringAfter("/object/public/sample/")
+                        if (filePath.isNotEmpty()) {
+                            supabaseClient.storage.from("sample").delete(listOf(filePath))
                         }
+                    } catch (e: Exception) {
+                        Log.e("DeleteAccount", "Supabase delete failed (non-fatal): ${e.message}")
                     }
+                }
+
+                // 7. Delete Firebase Auth user
+                currentUser.delete().await()
+
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "Account deleted successfully", Toast.LENGTH_SHORT).show()
+                    navigateToLogin()
+                }
+
+            } catch (e: com.google.firebase.auth.FirebaseAuthInvalidCredentialsException) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "Wrong password. Account not deleted.", Toast.LENGTH_LONG).show()
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    binding.btnEditPhoto.isEnabled = true
-
-                    Log.e("Upload", "Error uploading image: ${e.message}")
-
+                    Log.e("DeleteAccount", "Cascade delete failed: ${e.message}")
+                    Toast.makeText(requireContext(), "Failed: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
         }
     }
+
+    private fun navigateToLogin() {
+        val intent = Intent(requireContext(), LoginActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        startActivity(intent)
+        requireActivity().finish()
+    }
+
+    // ─── Payment Methods ──────────────────────────────────────────────────────
+
     private fun showPaymentMethodsDialog() {
-
-        val checkedItems =
-            BooleanArray(paymentMethods.size)
-
-        paymentMethods.forEachIndexed { index, method ->
-
-            checkedItems[index] =
-                selectedPayments.contains(method)
+        val checkedItems = BooleanArray(paymentMethods.size) { i ->
+            selectedPayments.contains(paymentMethods[i])
         }
 
-        MaterialAlertDialogBuilder(
-            requireContext(),
-            R.style.CustomMaterialDialog
-        )
-
+        MaterialAlertDialogBuilder(requireContext(), R.style.CustomMaterialDialog)
             .setTitle("Select Payment Methods")
-
-            .setMultiChoiceItems(
-                paymentMethods.toTypedArray(),
-                checkedItems
-            ) { _, which, isChecked ->
-
-                val selectedMethod =
-                    paymentMethods[which]
-
-                if (isChecked) {
-
-                    selectedPayments.add(
-                        selectedMethod
-                    )
-
-                } else {
-
-                    selectedPayments.remove(
-                        selectedMethod
-                    )
-                }
+            .setMultiChoiceItems(paymentMethods.toTypedArray(), checkedItems) { _, which, isChecked ->
+                val method = paymentMethods[which]
+                if (isChecked) selectedPayments.add(method)
+                else selectedPayments.remove(method)
             }
-
             .setPositiveButton("Save") { _, _ ->
-
                 updatePaymentChips()
-
                 savePaymentMethodsToFirestore()
             }
-
             .setNegativeButton("Cancel", null)
-
             .show()
     }
 
     private fun savePaymentMethodsToFirestore() {
-
         val currentUid = uid ?: return
-
         db.collection("Client")
             .document(currentUid)
-            .update(
-                "paymentMethods",
-                selectedPayments
-            )
+            .update("paymentMethods", selectedPayments)
     }
 
     private fun updatePaymentChips() {
-
         binding.chipPaymentMethods.removeAllViews()
 
         if (selectedPayments.isEmpty()) {
-
-            binding.emptyPaymentState.visibility =
-                View.VISIBLE
-
+            binding.emptyPaymentState.visibility = View.VISIBLE
             return
         }
 
-        binding.emptyPaymentState.visibility =
-            View.GONE
+        binding.emptyPaymentState.visibility = View.GONE
 
         selectedPayments.forEach { method ->
-
             val chip = Chip(requireContext(), null, R.style.MyCustomChip).apply {
                 text = method
                 isCloseIconVisible = false
@@ -326,240 +345,166 @@ class CoreProfileFragment : Fragment() {
                 )
                 setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
             }
-
             binding.chipPaymentMethods.addView(chip)
         }
     }
 
-    private fun loadotherinfo() {
-
-        if (uid != null) {
-
-            db.collection("Client")
-                .document(uid)
-
-                .addSnapshotListener { snapshot, error ->
-
-                    val b =
-                        _binding ?: return@addSnapshotListener
-
-                    if (error != null) {
-
-                        return@addSnapshotListener
-                    }
-
-                    if (snapshot != null &&
-                        snapshot.exists()
-                    ) {
-
-                        val user =
-                            snapshot.toObject<Client>()
-
-                        // COMPANY
-                        b.tvCompanyName.text =
-                            user?.companyName
-
-                        // PAYMENT METHODS
-                        selectedPayments.clear()
-
-                        selectedPayments.addAll(
-                            user?.paymentMethods
-                                ?: emptyList()
-                        )
-
-                        updatePaymentChips()
-
-                        // RATING
-                        val rating =
-                            user?.rating ?: 0.0
-
-                        if (rating > 0) {
-
-                            b.tvRating.text =
-                                String.format(
-                                    "%.1f",
-                                    rating
-                                )
-
-                            b.tvRating.visibility =
-                                View.VISIBLE
-
-                            b.tvNoRating.visibility =
-                                View.GONE
-
-                        } else {
-
-                            b.tvRating.visibility =
-                                View.GONE
-
-                            b.tvNoRating.visibility =
-                                View.VISIBLE
-                        }
-
-                        // REVIEWS
-                        val reviews =
-                            user?.reviews
-                                ?: emptyList()
-
-                        if (reviews.isNotEmpty()) {
-
-                            b.tvReviewCount.text =
-                                reviews.size.toString()
-
-                            b.tvReviewCount.visibility =
-                                View.VISIBLE
-
-                            b.tvNoReviewscount.visibility =
-                                View.GONE
-
-                            b.rvRecentReviews.visibility =
-                                View.VISIBLE
-
-                            b.emptyReviewsState.visibility =
-                                View.GONE
-
-                            val recentReviews =
-                                reviews.sortedByDescending {
-                                    it.timestamp.seconds
-                                }
-
-                            reviewAdapter.submitList(
-                                recentReviews
-                            )
-
-                        } else {
-
-                            b.tvReviewCount.visibility =
-                                View.GONE
-
-                            b.tvNoReviewscount.visibility =
-                                View.VISIBLE
-
-                            b.rvRecentReviews.visibility =
-                                View.GONE
-
-                            b.emptyReviewsState.visibility =
-                                View.VISIBLE
-                        }
-
-                        loge("${user?.name}")
-
-                        logd("${user?.companyName}")
-                    }
-                }
-        }
-    }
+    // ─── Data Loading ─────────────────────────────────────────────────────────
 
     private fun loadinfo() {
+        if (uid == null) return
 
-        if (uid != null) {
+        db.collection("Users").document(uid)
+            .addSnapshotListener { snapshot, error ->
+                val b = _binding ?: return@addSnapshotListener
+                if (error != null || snapshot == null || !snapshot.exists()) return@addSnapshotListener
 
-            db.collection("Users")
-                .document(uid)
+                val user = snapshot.toObject<User>()
+                Glide.with(this@CoreProfileFragment)
+                    .load(user?.profilePictureUrl)
+                    .error(R.drawable.ic_launcher_background)
+                    .into(b.profileImage)
 
-                .addSnapshotListener { snapshot, error ->
+                b.tvName.text = user?.fullName
+            }
+    }
 
-                    val b =
-                        _binding ?: return@addSnapshotListener
+    private fun loadotherinfo() {
+        if (uid == null) return
 
-                    if (error != null) {
+        db.collection("Client").document(uid)
+            .addSnapshotListener { snapshot, error ->
+                val b = _binding ?: return@addSnapshotListener
+                if (error != null || snapshot == null || !snapshot.exists()) return@addSnapshotListener
 
-                        return@addSnapshotListener
-                    }
+                val user = snapshot.toObject<Client>()
 
-                    if (snapshot != null &&
-                        snapshot.exists()
-                    ) {
+                b.tvCompanyName.text = user?.companyName
 
-                        val user =
-                            snapshot.toObject<User>()
+                selectedPayments.clear()
+                selectedPayments.addAll(user?.paymentMethods ?: emptyList())
+                updatePaymentChips()
 
-                        Glide.with(
-                            this@CoreProfileFragment
-                        )
+                val rating = user?.rating ?: 0.0
+                if (rating > 0) {
+                    b.tvRating.text = String.format("%.1f", rating)
+                    b.tvRating.visibility = View.VISIBLE
+                    b.tvNoRating.visibility = View.GONE
+                } else {
+                    b.tvRating.visibility = View.GONE
+                    b.tvNoRating.visibility = View.VISIBLE
+                }
 
-                            .load(user?.profilePictureUrl)
+                val reviews = user?.reviews ?: emptyList()
+                if (reviews.isNotEmpty()) {
+                    b.tvReviewCount.text = reviews.size.toString()
+                    b.tvReviewCount.visibility = View.VISIBLE
+                    b.tvNoReviewscount.visibility = View.GONE
+                    b.rvRecentReviews.visibility = View.VISIBLE
+                    b.emptyReviewsState.visibility = View.GONE
+                    reviewAdapter.submitList(reviews.sortedByDescending { it.timestamp.seconds })
+                } else {
+                    b.tvReviewCount.visibility = View.GONE
+                    b.tvNoReviewscount.visibility = View.VISIBLE
+                    b.rvRecentReviews.visibility = View.GONE
+                    b.emptyReviewsState.visibility = View.VISIBLE
+                }
 
-                            .error(
-                                R.drawable.ic_launcher_background
-                            )
+                loge("${user?.name}")
+                logd("${user?.companyName}")
+            }
+    }
 
-                            .into(binding.profileImage)
+    // ─── Image Upload ─────────────────────────────────────────────────────────
 
-                        b.tvName.text =
-                            user?.fullName
+    private fun setupReviewRecycler() {
+        reviewAdapter = ReviewAdapter()
+        binding.rvRecentReviews.apply {
+            adapter = reviewAdapter
+            layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+            isNestedScrollingEnabled = false
+        }
+    }
+
+    private fun uploadImageToSupabase(uri: Uri) {
+        val byteArray = uriToByteArray(requireContext(), uri)
+
+        if (byteArray.size > 5 * 1024 * 1024) {
+            Toast.makeText(requireContext(), "Image must be under 5 MB", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        binding.btnEditPhoto.isEnabled = false
+        val fileName = "uploads/${System.currentTimeMillis()}.jpg"
+        val bucket = supabaseClient.storage.from("sample")
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                bucket.uploadAsFlow(fileName, byteArray).collect { status ->
+                    withContext(Dispatchers.Main) {
+                        when (status) {
+                            is UploadStatus.Progress -> Log.d("Upload", "In progress...")
+                            is UploadStatus.Success -> {
+                                binding.btnEditPhoto.isEnabled = true
+                                handleUploadSuccess(fileName)
+                            }
+                        }
                     }
                 }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    binding.btnEditPhoto.isEnabled = true
+                    Log.e("Upload", "Error: ${e.message}")
+                }
+            }
         }
     }
-    private fun uriToByteArray(
-        context: Context,
-        uri: Uri
-    ): ByteArray {
 
-        return context.contentResolver
-            .openInputStream(uri)
-            ?.use {
-                it.readBytes()
-            }
-            ?: throw Exception("Unable to read image")
-    }
-    private fun handleUploadSuccess(bucket: Any, fileName: String) {
+    private fun handleUploadSuccess(fileName: String) {
         try {
             val imageUrl = supabaseClient.storage.from("sample").publicUrl(fileName)
-            Log.d("ProfileFragment", "Generated public URL: $imageUrl")
-
-            val currentUser = auth.currentUser
-            if (currentUser != null) {
-                Log.d("ProfileFragment", "Updating Firestore with new image URL")
-                db.collection("Users")
-                    .document(currentUser.uid)
-                    .update("profilePictureUrl",imageUrl)
-                    .addOnSuccessListener {
-                        Log.d("ProfileFragment", "Firestore update successful")
-                        Toast.makeText(requireContext(), "Profile image updated!", Toast.LENGTH_SHORT).show()
-                        Glide.with(this)
-                            .load(imageUrl)
-                            .error(R.drawable.ic_launcher_background)
-                            .into(binding.profileImage)
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e("FirestoreUpdate", "Failed to update profile image URL: ${e.message}", e)
-                        Toast.makeText(requireContext(), "Failed to update profile image: ${e.message}", Toast.LENGTH_SHORT).show()
-                    }
-            } else {
-                Log.e("ProfileFragment", "Current user is null")
+            val currentUser = auth.currentUser ?: run {
                 Toast.makeText(requireContext(), "User authentication error", Toast.LENGTH_SHORT).show()
+                return
             }
+
+            db.collection("Users").document(currentUser.uid)
+                .update("profilePictureUrl", imageUrl)
+                .addOnSuccessListener {
+                    Toast.makeText(requireContext(), "Profile image updated!", Toast.LENGTH_SHORT).show()
+                    Glide.with(this)
+                        .load(imageUrl)
+                        .error(R.drawable.ic_launcher_background)
+                        .into(binding.profileImage)
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(requireContext(), "Failed to update image: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
         } catch (e: Exception) {
-            Log.e("ProfileFragment", "Error in handleUploadSuccess: ${e.message}", e)
-            Toast.makeText(requireContext(), "Error processing upload success: ${e.message}", Toast.LENGTH_SHORT).show()
+            Log.e("ProfileFragment", "handleUploadSuccess error: ${e.message}")
         }
     }
 
+    private fun uriToByteArray(context: Context, uri: Uri): ByteArray {
+        return context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+            ?: throw Exception("Unable to read image")
+    }
+
+    // ─── Lifecycle ────────────────────────────────────────────────────────────
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 
     companion object {
-
         @JvmStatic
-        fun newInstance(
-            param1: String,
-            param2: String
-        ) =
+        fun newInstance(param1: String, param2: String) =
             CoreProfileFragment().apply {
-
                 arguments = Bundle().apply {
-
                     putString(ARG_PARAM1, param1)
-
                     putString(ARG_PARAM2, param2)
                 }
             }
-    }
-
-    override fun onDestroyView() {
-
-        super.onDestroyView()
-
-        _binding = null
     }
 }

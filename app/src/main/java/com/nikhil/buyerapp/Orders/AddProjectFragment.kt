@@ -182,7 +182,7 @@ class AddProjectFragment : Fragment() {
             val checkedItems = BooleanArray(skillsArray.size) { false }
 
             // Show Multi-Select Dialog
-            MaterialAlertDialogBuilder(requireContext())
+            MaterialAlertDialogBuilder(requireContext(),R.style.CustomMaterialDialog)
                 .setTitle("Select Required Skills")
                 .setMultiChoiceItems(skillsArray, checkedItems) { dialog, which, isChecked ->
                     // You can handle realtime checks here if needed

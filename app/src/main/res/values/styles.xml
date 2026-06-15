@@ -37,6 +37,9 @@
         parent="ThemeOverlay.Material3.MaterialAlertDialog">
 
         <item name="colorSurface">@color/bgdark</item>
+        <item name="colorSurfaceContainerHigh">@color/bgdark</item>
+        <item name="android:textColor">@color/black</item>
+
 
 
 
