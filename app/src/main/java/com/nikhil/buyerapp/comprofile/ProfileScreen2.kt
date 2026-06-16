@@ -69,28 +69,29 @@ class ProfileScreen2 : AppCompatActivity() {
             insets
         }
         binding.btnNext.setOnClickListener {
-            savedata()
+            val biotext = binding.etBio.text.toString()
+            if (biotext.isEmpty()) {
+                Toast.makeText(this, "Please enter your bio", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            val selected = mutableListOf<String>()
+            for (i in 0 until binding.chipGroupLang.childCount) {
+                val chip = binding.chipGroupLang.getChildAt(i) as Chip
+                if (chip.isChecked) {
+                    selected.add(chip.text.toString())
+                }
+            }
+            if (selected.isEmpty()) {
+                Toast.makeText(this, "Please select at least one language", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            savedata(biotext,selected)
             startActivity(Intent(this,EnterCode::class.java))
             finish()
         }
     }
-    private fun savedata() {
-        val biotext = binding.etBio.text.toString()
-        if (biotext.isEmpty()) {
-            Toast.makeText(this, "Please enter your bio", Toast.LENGTH_SHORT).show()
-            return
-        }
-        val selected = mutableListOf<String>()
-        for (i in 0 until binding.chipGroupLang.childCount) {
-            val chip = binding.chipGroupLang.getChildAt(i) as Chip
-            if (chip.isChecked) {
-                selected.add(chip.text.toString())
-            }
-        }
-        if (selected.isEmpty()) {
-            Toast.makeText(this, "Please select at least one language", Toast.LENGTH_SHORT).show()
-            return
-        }
+    private fun savedata(biotext:String, selected:List<String>) {
+
         generate { code ->
             val user = mapOf(
                 "bio" to biotext,

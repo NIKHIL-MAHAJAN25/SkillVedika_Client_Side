@@ -27,6 +27,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
 import com.nikhil.buyerapp.R
 import com.nikhil.buyerapp.databinding.ActivityHosthomeBinding
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
@@ -41,7 +42,7 @@ class hosthome : AppCompatActivity() {
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
         window.statusBarColor = android.graphics.Color.TRANSPARENT
-        binding=ActivityHosthomeBinding.inflate(layoutInflater)
+        binding = ActivityHosthomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val statusBars = insets.getInsets(WindowInsetsCompat.Type.statusBars())
@@ -50,13 +51,9 @@ class hosthome : AppCompatActivity() {
         }
 
 
-
-
-
-
-        val navHostFragment=supportFragmentManager
+        val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.host) as NavHostFragment
-        val navController:NavController=navHostFragment.navController
+        val navController: NavController = navHostFragment.navController
         binding.bottomNavigation.setupWithNavController(navController)
 
         // 3. Setup the BottomNavigationView with the NavController
@@ -69,12 +66,18 @@ class hosthome : AppCompatActivity() {
                 R.id.home,
                 R.id.chat,
                 R.id.orders -> showBottomNav()
+
                 else -> hideBottomNav()
             }
         }
         val prefs = getSharedPreferences("hints", MODE_PRIVATE)
-        showHintsInSequence(prefs)
+        binding.root.post {
+            lifecycleScope.launch {
+                delay(3000)
+                showHintsInSequence(prefs)
+            }
         }
+    }
 
     private fun showHintsInSequence(prefs: SharedPreferences) {
         binding.bottomNavigation.post {

@@ -81,6 +81,10 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.skillsShimmer.visibility = View.VISIBLE
+        binding.skillsShimmer.startShimmer()
+
+        binding.recyclerservices.visibility = View.GONE
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 // Check if the search results are currently visible
@@ -302,13 +306,22 @@ class HomeFragment : Fragment() {
             {
                 return@addSnapshotListener
             }
-            if(snapshot!=null && !snapshot.isEmpty())
-            {
-                val skill=snapshot.toObjects(DataSkill::class.java)
+            if(snapshot != null && !snapshot.isEmpty){
+
+                val skill = snapshot.toObjects(DataSkill::class.java)
                 serviceAdapter.submitList(skill)
+
+                binding.skillsShimmer.stopShimmer()
+                binding.skillsShimmer.visibility = View.GONE
+
+                binding.recyclerservices.visibility = View.VISIBLE
             }else{
-                logd("null or empty")
                 serviceAdapter.submitList(emptyList())
+
+                binding.skillsShimmer.stopShimmer()
+                binding.skillsShimmer.visibility = View.GONE
+
+                binding.recyclerservices.visibility = View.VISIBLE
 
             }
         }

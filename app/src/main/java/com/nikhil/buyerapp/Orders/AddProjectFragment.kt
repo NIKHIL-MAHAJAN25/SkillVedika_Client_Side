@@ -73,7 +73,33 @@ class AddProjectFragment : Fragment() {
         binding.btnPostJob.setOnClickListener {
             savejob()
         }
+        // Auto-clear errors on input
+        listOf(
+            binding.layoutTitle to binding.etTitle,
+            binding.layoutBudget to binding.etBudget,
+            binding.layoutDesc to binding.etDesc
+        ).forEach { (layout, editText) ->
+            editText.addTextChangedListener(object : android.text.TextWatcher {
+                override fun afterTextChanged(s: android.text.Editable?) { layout.error = null }
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            })
+        }
+        // Clear category error on selection
+        binding.etCategory.setOnItemClickListener { parent, view, position, id ->
+            binding.layoutCategory.error = null
+            // re-call your existing category logic below too
+            val selectedCategoryName = (binding.etCategory.adapter.getItem(position) as String)
+            val categoryObj = SkillData.getSkillCategories().find { it.categoryName == selectedCategoryName }
+            if (categoryObj != null) {
+                currentAvailableSkills = categoryObj.skills
+                selectedSkillsList.clear()
+                binding.chipGroupSkills.removeAllViews()
+                binding.btnAddSkill.isEnabled = true
+            }
+        }
     }
+
 
     companion object {
         /**
@@ -113,6 +139,59 @@ class AddProjectFragment : Fragment() {
         val desc=binding.etDesc.text.toString()
         val budgetStr = binding.etBudget.text.toString().trim()
         val budget = budgetStr.toDoubleOrNull() ?: 0.0
+        // Clear previous errors
+        binding.layoutTitle.error = null
+        binding.layoutCategory.error = null
+        binding.layoutBudget.error = null
+        binding.layoutDesc.error = null
+
+        when {
+            projtitle.isEmpty() -> {
+                binding.layoutTitle.error = "Project title is required"
+                binding.etTitle.requestFocus()
+                return
+            }
+            projtitle.length < 5 -> {
+                binding.layoutTitle.error = "Title is too short"
+                binding.etTitle.requestFocus()
+                return
+            }
+            cat.isEmpty() -> {
+                binding.layoutCategory.error = "Please select a category"
+                binding.etCategory.requestFocus()
+                return
+            }
+            selectedSkillsList.isEmpty() -> {
+                snack("Please add at least one required skill")
+                binding.btnAddSkill.requestFocus()
+                return
+            }
+            budgetStr.isEmpty() -> {
+                binding.layoutBudget.error = "Budget is required"
+                binding.etBudget.requestFocus()
+                return
+            }
+            budgetStr.toDoubleOrNull() == null -> {
+                binding.layoutBudget.error = "Enter a valid number"
+                binding.etBudget.requestFocus()
+                return
+            }
+            budgetStr.toDouble() <= 0 -> {
+                binding.layoutBudget.error = "Budget must be greater than 0"
+                binding.etBudget.requestFocus()
+                return
+            }
+            desc.isEmpty() -> {
+                binding.layoutDesc.error = "Description is required"
+                binding.etDesc.requestFocus()
+                return
+            }
+            desc.length < 20 -> {
+                binding.layoutDesc.error = "Please describe requirements in more detail"
+                binding.etDesc.requestFocus()
+                return
+            }
+        }
 
         if (selectedSkillsList.isEmpty()) {
             snack("Please select at least one skill")

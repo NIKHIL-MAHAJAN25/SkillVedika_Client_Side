@@ -30,7 +30,7 @@ object SkillData {
                 skills = listOf("AWS (Amazon Web Services)", "Microsoft Azure", "GCP (Google Cloud Platform)", "Docker", "Kubernetes", "Jenkins", "Git", "Terraform", "CI/CD", "Nginx", "Apache")
             ),
             SkillsCat(
-                categoryName = "Data Science & Machine Learning",
+                categoryName = "Data Science and Machine Learning",
                 skills = listOf("TensorFlow", "PyTorch", "Scikit-learn", "Pandas", "NumPy", "Jupyter Notebook", "Apache Spark", "R", "Machine Learning", "Data Analysis", "Data Visualization")
             ),
             SkillsCat(
@@ -38,7 +38,7 @@ object SkillData {
                 skills = listOf("Figma", "Sketch", "Adobe XD", "User Research", "Wireframing", "Prototyping", "Design Systems", "User Interface Design", "User Experience Design")
             ),
             SkillsCat(
-                categoryName = "Project Management & Methodologies",
+                categoryName = "Project Management and Methodologies",
                 skills = listOf("Agile", "Scrum", "Kanban", "JIRA", "Confluence", "Trello", "Asana", "Project Management", "Product Management")
             )
         )

@@ -44,6 +44,7 @@ class ProfileScreen1 : AppCompatActivity() {
     lateinit var binding: ActivityProfileScreen1Binding
     private var auth: FirebaseAuth = FirebaseAuth.getInstance()
     val db = Firebase.firestore
+    private var isProfilePicUploaded = false
 
     private lateinit var supabaseClient: SupabaseClient
     private val pickImageLauncher =
@@ -111,6 +112,55 @@ class ProfileScreen1 : AppCompatActivity() {
             val full = "$code$numbere"
             val occupations = binding.etoccup2.text.toString()
             val states = binding.actState.text.toString()
+            when {
+                !isProfilePicUploaded -> {
+                    Toast.makeText(this, "Please add a profile photo", Toast.LENGTH_SHORT).show()
+                    binding.profileImage.animate()
+                        .scaleX(1.1f).scaleY(1.1f)
+                        .setDuration(100)
+                        .withEndAction {
+                            binding.profileImage.animate().scaleX(1f).scaleY(1f).setDuration(100).start()
+                        }.start()
+                    return@setOnClickListener
+                }
+                aname.isEmpty() -> {
+                    binding.etname.error = "Name is required"
+                    binding.etname2.requestFocus()
+                    return@setOnClickListener
+                }
+                aname.length < 2 -> {
+                    binding.etname.error = "Enter a valid name"
+                    binding.etname2.requestFocus()
+                    return@setOnClickListener
+                }
+                numbere.isEmpty() -> {
+                    binding.etPhone.error = "Phone number is required"
+                    binding.etPhone.requestFocus()
+                    return@setOnClickListener
+                }
+                numbere.length < 7 || numbere.length > 15 -> {
+                    binding.etPhone.error = "Enter a valid phone number"
+                    binding.etPhone.requestFocus()
+                    return@setOnClickListener
+                }
+                occupations.isEmpty() -> {
+                    binding.etoccup.error = "Please select an occupation"
+                    binding.etoccup2.requestFocus()
+                    return@setOnClickListener
+                }
+                states.isEmpty() -> {
+                    binding.cardState.strokeWidth = 2  // visual cue since it's a card
+                    Toast.makeText(this, "Please select a state", Toast.LENGTH_SHORT).show()
+                    binding.actState.requestFocus()
+                    return@setOnClickListener
+                }
+                else -> {
+                    // Clear any previous errors
+                    binding.etname.error = null
+                    binding.etPhone.error = null
+                    binding.etoccup.error = null
+                }
+            }
 
             val userUpdates = mapOf(
                 "fullName" to aname,
@@ -221,6 +271,7 @@ class ProfileScreen1 : AppCompatActivity() {
                     .document(currentUser.uid)
                     .update("profilePictureUrl",imageUrl)
                     .addOnSuccessListener {
+                        isProfilePicUploaded = true
                         Log.d("ProfileFragment", "Firestore update successful")
                         Toast.makeText(this, "Profile image updated!", Toast.LENGTH_SHORT).show()
                         Glide.with(this)

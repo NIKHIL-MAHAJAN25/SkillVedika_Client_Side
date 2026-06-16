@@ -18,7 +18,7 @@ class ServiceAdapter(private val onclicked:(DataSkill)->Unit):ListAdapter<DataSk
             Glide.with(itemView.context)
                 .load(service.url)
                 .centerCrop()
-                .placeholder(R.drawable.ic_launcher_background)
+                .placeholder(R.drawable.shimmer_placeholder)
                 .into(binding.serviceImage)
             binding.root.setOnClickListener {
                 onclicked(service)

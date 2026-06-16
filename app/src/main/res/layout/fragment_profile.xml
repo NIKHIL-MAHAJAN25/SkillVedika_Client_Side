@@ -402,18 +402,18 @@
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnViewAllReviews"
-                        style="@style/Widget.Material3.Button.TextButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:minWidth="0dp"
-                        android:text="View All"
-                        android:textColor="#2E7D32"
+<!--                    <com.google.android.material.button.MaterialButton-->
+<!--                        android:id="@+id/btnViewAllReviews"-->
+<!--                        style="@style/Widget.Material3.Button.TextButton"-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:minWidth="0dp"-->
+<!--                        android:text="View All"-->
+<!--                        android:textColor="#2E7D32"-->
 
-                        app:iconGravity="end"
-                        app:iconPadding="4dp"
-                        app:iconTint="#2E7D32" />
+<!--                        app:iconGravity="end"-->
+<!--                        app:iconPadding="4dp"-->
+<!--                        app:iconTint="#2E7D32" />-->
                 </LinearLayout>
 
                 <!-- Latest Reviews Preview (Show 2-3 reviews) -->
