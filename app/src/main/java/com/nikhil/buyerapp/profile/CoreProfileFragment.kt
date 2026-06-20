@@ -1,5 +1,6 @@
 package com.nikhil.buyerapp.profile
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
@@ -149,9 +150,26 @@ class CoreProfileFragment : Fragment() {
             dialog.dismiss()
             showDeleteConfirmationDialog()
         }
+        dialogView.findViewById<android.widget.LinearLayout>(R.id.rowContactSupport).setOnClickListener {
+            dialog.dismiss()
+            showcontactDialog()
+        }
 
         dialog.show()
     }
+    private fun showcontactDialog()
+    {
+        val intent = Intent(Intent.ACTION_SENDTO).apply {
+            data = Uri.parse("mailto:support.skillvedika@gmail.com")
+            putExtra(Intent.EXTRA_SUBJECT, "Skill Vedika Support")
+        }
+        try {
+            startActivity(intent)
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(requireContext(), "No email app found. Contact us at support.skillvedika@gmail.com", Toast.LENGTH_LONG).show()
+        }
+    }
+
 
     private fun logout() {
         auth.signOut()
@@ -233,7 +251,7 @@ class CoreProfileFragment : Fragment() {
                 }
 
                 // 2. Delete Chats where uid is a participant
-                val chats = db.collection("Chats")
+                val chats = db.collection("Chat")
                     .whereArrayContains("participants", currentUid)
                     .get()
                     .await()

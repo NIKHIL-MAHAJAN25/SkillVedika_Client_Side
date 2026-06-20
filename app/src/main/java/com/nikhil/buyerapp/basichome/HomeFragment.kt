@@ -144,11 +144,20 @@ class HomeFragment : Fragment() {
                 false
             }
         }
+        val currentQuery = binding.etsearchbar.text?.toString()?.trim() ?: ""
+
+
         ///////////////////////////////////////////search logic//////////////////////////////////////////////////
 
 
 
 
+    }
+
+    override fun onResume() {
+        super.onResume()
+        binding.etsearchbar.text?.clear()
+        toggleSearch(false)
     }
     private fun fetchnews() {
 

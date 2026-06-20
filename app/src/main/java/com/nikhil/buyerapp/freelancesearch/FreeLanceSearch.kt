@@ -61,6 +61,9 @@ class FreeLanceSearch : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.shimmerLayout.startShimmer()
+        binding.shimmerLayout.visibility = View.VISIBLE
+        binding.recyclerresults.visibility = View.GONE
         binding.tvresults.text="Results for ${primskill}"
 
         setuprecycler()
@@ -68,33 +71,80 @@ class FreeLanceSearch : Fragment() {
 
     }
     fun fetchandmap() {
-        db.collection("Freelancers").whereEqualTo("primaryskill", primskill).get()
+
+        db.collection("Freelancers")
+            .whereEqualTo("primaryskill", primskill)
+            .get()
             .addOnSuccessListener { snapshots ->
+
                 Log.e("FIRESTORE", "Docs size = ${snapshots.size()}")
+
+                if (snapshots.isEmpty) {
+                    binding.shimmerLayout.stopShimmer()
+                    binding.shimmerLayout.visibility = View.GONE
+                    binding.recyclerresults.visibility = View.VISIBLE
+                    freeadapter.submitList(emptyList())
+                    return@addOnSuccessListener
+                }
+
                 val tempList = mutableListOf<FreelancerItem>()
+                var loadedCount = 0
+                val totalCount = snapshots.documents.count {
+                    it.id != auth.currentUser?.uid
+                }
 
                 for (doc in snapshots.documents) {
+
                     if (doc.id == auth.currentUser?.uid) continue
+
                     val freelancer = doc.toObject(FreelancerItem::class.java)
                         ?.copy(uid = doc.id) ?: continue
 
                     db.collection("Users")
-                        .document(doc.id) // SAME UID
+                        .document(doc.id)
                         .get()
                         .addOnSuccessListener { userDoc ->
 
-                            val profileUrl = userDoc.getString("profilePictureUrl") ?: ""
+                            val profileUrl =
+                                userDoc.getString("profilePictureUrl") ?: ""
 
-                            val merged = freelancer.copy(
-                                profileImageUrl = profileUrl
+                            tempList.add(
+                                freelancer.copy(
+                                    profileImageUrl = profileUrl
+                                )
                             )
 
-                            tempList.add(merged)
-                            freeadapter.submitList(tempList.toList())
+                            loadedCount++
 
+                            if (loadedCount == totalCount) {
 
+                                freeadapter.submitList(tempList.toList())
+
+                                binding.shimmerLayout.stopShimmer()
+                                binding.shimmerLayout.visibility = View.GONE
+                                binding.recyclerresults.visibility = View.VISIBLE
+                            }
+                        }
+                        .addOnFailureListener {
+
+                            loadedCount++
+
+                            if (loadedCount == totalCount) {
+
+                                freeadapter.submitList(tempList.toList())
+
+                                binding.shimmerLayout.stopShimmer()
+                                binding.shimmerLayout.visibility = View.GONE
+                                binding.recyclerresults.visibility = View.VISIBLE
+                            }
                         }
                 }
+            }
+            .addOnFailureListener {
+
+                binding.shimmerLayout.stopShimmer()
+                binding.shimmerLayout.visibility = View.GONE
+                binding.recyclerresults.visibility = View.VISIBLE
             }
     }
     fun setuprecycler(){
@@ -151,8 +201,10 @@ class FreeLanceSearch : Fragment() {
     }
 
     override fun onDestroyView() {
+        binding.shimmerLayout.stopShimmer()
+        _binding = null
         super.onDestroyView()
-        _binding=null
+
 
     }
 }

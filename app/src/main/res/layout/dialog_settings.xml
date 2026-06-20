@@ -43,13 +43,43 @@
 
 
     </LinearLayout>
-
-    <!-- Divider -->
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="#F0F0F0"/>
 
+    <LinearLayout
+        android:id="@+id/rowContactSupport"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="?attr/selectableItemBackground"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp">
+
+        <ImageView
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:src="@drawable/outline_support_agent_24"
+            app:tint="#444444"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="16dp"
+            android:text="Contact Support"
+            android:textSize="15sp"
+            android:textColor="@color/black"/>
+
+
+    </LinearLayout>
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#F0F0F0"/>
     <!-- Delete Row -->
     <LinearLayout
         android:id="@+id/rowDeleteAccount"

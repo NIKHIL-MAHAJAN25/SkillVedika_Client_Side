@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="14dp">
+
+        <!-- Profile Image -->
+        <View
+            android:id="@+id/shimmerProfile"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="@drawable/shimer_circle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <!-- Name -->
+        <View
+            android:id="@+id/shimmerName"
+            android:layout_width="140dp"
+            android:layout_height="18dp"
+            android:layout_marginStart="12dp"
+            android:background="@drawable/shimmer_placeholder"
+            app:layout_constraintStart_toEndOf="@id/shimmerProfile"
+            app:layout_constraintTop_toTopOf="@id/shimmerProfile"/>
+
+        <!-- Skill -->
+        <View
+            android:id="@+id/shimmerSkill"
+            android:layout_width="100dp"
+            android:layout_height="14dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/shimmer_placeholder"
+            app:layout_constraintStart_toStartOf="@id/shimmerName"
+            app:layout_constraintTop_toBottomOf="@id/shimmerName"/>
+
+        <!-- Rate -->
+        <View
+            android:id="@+id/shimmerRate"
+            android:layout_width="70dp"
+            android:layout_height="14dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/shimmer_placeholder"
+            app:layout_constraintStart_toStartOf="@id/shimmerName"
+            app:layout_constraintTop_toBottomOf="@id/shimmerSkill"/>
+
+        <!-- Rating -->
+        <View
+            android:id="@+id/shimmerRating"
+            android:layout_width="50dp"
+            android:layout_height="14dp"
+            android:layout_marginStart="12dp"
+            android:background="@drawable/shimmer_placeholder"
+            app:layout_constraintStart_toEndOf="@id/shimmerRate"
+            app:layout_constraintTop_toTopOf="@id/shimmerRate"/>
+
+        <!-- Contact Button -->
+        <View
+            android:id="@+id/shimmerButton"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/shimer_placeholder_round"
+            app:layout_constraintTop_toBottomOf="@id/shimmerProfile"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

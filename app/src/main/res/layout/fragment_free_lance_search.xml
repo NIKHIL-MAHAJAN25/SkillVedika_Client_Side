@@ -60,6 +60,28 @@
                 android:textColor="@color/black"
                 android:textStyle="bold"
                 android:textSize="18sp" />
+            <!-- SHIMMER -->
+            <com.facebook.shimmer.ShimmerFrameLayout
+                android:id="@+id/shimmerLayout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/tvresults"
+                app:layout_constraintStart_toEndOf="@id/vguide1"
+                app:layout_constraintEnd_toStartOf="@id/vguide2">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <include layout="@layout/item_freelance_shimmer"/>
+                    <include layout="@layout/item_freelance_shimmer"/>
+                    <include layout="@layout/item_freelance_shimmer"/>
+                    <include layout="@layout/item_freelance_shimmer"/>
+
+                </LinearLayout>
+
+            </com.facebook.shimmer.ShimmerFrameLayout>
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerresults"
                 android:layout_width="0dp"

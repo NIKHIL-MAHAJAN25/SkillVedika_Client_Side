@@ -102,7 +102,7 @@ class hosthome : AppCompatActivity() {
     }
     private fun showHomeHint(prefs: SharedPreferences, menu: ViewGroup) {
         val aiTarget = menu.getChildAt(0) ?: return  // index 3 = AI/Gemini
-
+        prefs.edit().putBoolean("home_hint_shows", true).apply()
         TapTargetView.showFor(
             this@hosthome,
             TapTarget.forView(
@@ -120,6 +120,7 @@ class hosthome : AppCompatActivity() {
                 .cancelable(false)
                 .id(201),
             object : TapTargetView.Listener() {
+
                 override fun onTargetClick(view: TapTargetView) {
                     super.onTargetClick(view)
                     prefs.edit().putBoolean("home_hint_shows", true).apply()
@@ -131,7 +132,7 @@ class hosthome : AppCompatActivity() {
     }
     private fun showChatHint(prefs: SharedPreferences, menu: ViewGroup) {
         val aiTarget = menu.getChildAt(1) ?: return  // index 3 = AI/Gemini
-
+        prefs.edit().putBoolean("chat_hint_shows", true).apply()
         TapTargetView.showFor(
             this@hosthome,
             TapTarget.forView(
@@ -160,7 +161,7 @@ class hosthome : AppCompatActivity() {
     }
     private fun showOrderHint(prefs: SharedPreferences, menu: ViewGroup) {
         val aiTarget = menu.getChildAt(2) ?: return  // index 3 = AI/Gemini
-
+        prefs.edit().putBoolean("order_hint_shows", true).apply()
         TapTargetView.showFor(
             this@hosthome,
             TapTarget.forView(
@@ -190,7 +191,7 @@ class hosthome : AppCompatActivity() {
 
     private fun showAiHint(prefs: SharedPreferences, menu: ViewGroup) {
         val aiTarget = menu.getChildAt(3) ?: return  // index 3 = AI/Gemini
-
+        prefs.edit().putBoolean("ai_hint_shown", true).apply()
         TapTargetView.showFor(
             this@hosthome,
             TapTarget.forView(
@@ -220,7 +221,9 @@ class hosthome : AppCompatActivity() {
 
     private fun showProfileHint(prefs: SharedPreferences, menu: ViewGroup) {
         val profileTarget = menu.getChildAt(4) ?: return  // index 4 = Profile
-
+        prefs.edit()
+            .putBoolean("freelancer_full_profile_hint_shown", true)
+            .apply()
         TapTargetView.showFor(
             this@hosthome,
             TapTarget.forView(
