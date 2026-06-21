@@ -2,7 +2,6 @@ package com.nikhil.buyerapp.freelancesearch
 
 import android.os.Bundle
 import android.util.Log
-import android.util.Log.e
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -14,11 +13,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
 import com.nikhil.buyerapp.R
 import com.nikhil.buyerapp.databinding.FragmentFreeLanceSearchBinding
-import com.nikhil.buyerapp.dataclasses.Freelancer
 import com.nikhil.buyerapp.dataclasses.FreelancerItem
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
 
@@ -28,22 +24,22 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class FreeLanceSearch : Fragment() {
-    // TODO: Rename and change types of parameters
+
     private var param1: String? = null
     private var param2: String? = null
-    private var _binding: FragmentFreeLanceSearchBinding?=null
-    val binding get()=_binding!!
-    lateinit var primskill:String
-    val db= Firebase.firestore
+
+    private var _binding: FragmentFreeLanceSearchBinding? = null
+    val binding get() = _binding!!
+
+    lateinit var primskill: String
+    val db = Firebase.firestore
     var auth: FirebaseAuth = FirebaseAuth.getInstance()
     lateinit var freeadapter: FreelanceAdapter
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        primskill=arguments?.getString("categoryprimskill")!!
-        Log.e("DEBUG","${primskill}")
-
+        primskill = arguments?.getString("categoryprimskill") ?: ""
+        Log.e("DEBUG", primskill)
 
         arguments?.let {
             param1 = it.getString(ARG_PARAM1)
@@ -54,8 +50,8 @@ class FreeLanceSearch : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        _binding=FragmentFreeLanceSearchBinding.inflate(inflater,container,false)
+    ): View {
+        _binding = FragmentFreeLanceSearchBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -64,12 +60,19 @@ class FreeLanceSearch : Fragment() {
         binding.shimmerLayout.startShimmer()
         binding.shimmerLayout.visibility = View.VISIBLE
         binding.recyclerresults.visibility = View.GONE
-        binding.tvresults.text="Results for ${primskill}"
+        binding.tvresults.text = "Results for $primskill"
 
         setuprecycler()
         fetchandmap()
-
     }
+
+    private fun stopShimmerAndShow() {
+        if (_binding == null) return
+        binding.shimmerLayout.stopShimmer()
+        binding.shimmerLayout.visibility = View.GONE
+        binding.recyclerresults.visibility = View.VISIBLE
+    }
+
     fun fetchandmap() {
 
         db.collection("Freelancers")
@@ -77,119 +80,92 @@ class FreeLanceSearch : Fragment() {
             .get()
             .addOnSuccessListener { snapshots ->
 
+                if (_binding == null || !isAdded) return@addOnSuccessListener
+
                 Log.e("FIRESTORE", "Docs size = ${snapshots.size()}")
 
-                if (snapshots.isEmpty) {
-                    binding.shimmerLayout.stopShimmer()
-                    binding.shimmerLayout.visibility = View.GONE
-                    binding.recyclerresults.visibility = View.VISIBLE
+                val otherDocs = snapshots.documents.filter { it.id != auth.currentUser?.uid }
+
+                if (otherDocs.isEmpty()) {
                     freeadapter.submitList(emptyList())
+                    stopShimmerAndShow()
                     return@addOnSuccessListener
                 }
 
                 val tempList = mutableListOf<FreelancerItem>()
                 var loadedCount = 0
-                val totalCount = snapshots.documents.count {
-                    it.id != auth.currentUser?.uid
+                val totalCount = otherDocs.size
+
+                fun onOneLoaded() {
+                    loadedCount++
+                    if (loadedCount == totalCount) {
+                        if (_binding == null || !isAdded) return
+                        freeadapter.submitList(tempList.toList())
+                        stopShimmerAndShow()
+                    }
                 }
 
-                for (doc in snapshots.documents) {
-
-                    if (doc.id == auth.currentUser?.uid) continue
+                for (doc in otherDocs) {
 
                     val freelancer = doc.toObject(FreelancerItem::class.java)
-                        ?.copy(uid = doc.id) ?: continue
+                        ?.copy(uid = doc.id)
+
+                    if (freelancer == null) {
+                        // still counts toward completion, or loadedCount never reaches totalCount
+                        onOneLoaded()
+                        continue
+                    }
 
                     db.collection("Users")
                         .document(doc.id)
                         .get()
                         .addOnSuccessListener { userDoc ->
 
-                            val profileUrl =
-                                userDoc.getString("profilePictureUrl") ?: ""
+                            if (_binding == null || !isAdded) return@addOnSuccessListener
+
+                            val profileUrl = userDoc.getString("profilePictureUrl") ?: ""
 
                             tempList.add(
-                                freelancer.copy(
-                                    profileImageUrl = profileUrl
-                                )
+                                freelancer.copy(profileImageUrl = profileUrl)
                             )
 
-                            loadedCount++
-
-                            if (loadedCount == totalCount) {
-
-                                freeadapter.submitList(tempList.toList())
-
-                                binding.shimmerLayout.stopShimmer()
-                                binding.shimmerLayout.visibility = View.GONE
-                                binding.recyclerresults.visibility = View.VISIBLE
-                            }
+                            onOneLoaded()
                         }
                         .addOnFailureListener {
-
-                            loadedCount++
-
-                            if (loadedCount == totalCount) {
-
-                                freeadapter.submitList(tempList.toList())
-
-                                binding.shimmerLayout.stopShimmer()
-                                binding.shimmerLayout.visibility = View.GONE
-                                binding.recyclerresults.visibility = View.VISIBLE
-                            }
+                            if (_binding == null || !isAdded) return@addOnFailureListener
+                            onOneLoaded()
                         }
                 }
             }
             .addOnFailureListener {
-
-                binding.shimmerLayout.stopShimmer()
-                binding.shimmerLayout.visibility = View.GONE
-                binding.recyclerresults.visibility = View.VISIBLE
+                stopShimmerAndShow()
             }
     }
-    fun setuprecycler(){
-        freeadapter= FreelanceAdapter (
-            onclicked = { FreelancerItem ->
 
-            val bundle= Bundle().apply {
-                putString("uid",FreelancerItem.uid)
-            }
-
-            findNavController().navigate(
-                R.id.scaffold,bundle
-            )
-                        },
-            onContactClicked = { FreelancerItem ->
+    fun setuprecycler() {
+        freeadapter = FreelanceAdapter(
+            onclicked = { freelancerItem ->
                 val bundle = Bundle().apply {
-                    putString("receiverUid", FreelancerItem.uid)
-                    putString("receiverName", FreelancerItem.name)
-                    putString("receiverImage", FreelancerItem.profileImageUrl)
+                    putString("uid", freelancerItem.uid)
                 }
-                findNavController().navigate(
-                    R.id.chatlist,
-                    bundle
-                )
+                findNavController().navigate(R.id.scaffold, bundle)
+            },
+            onContactClicked = { freelancerItem ->
+                val bundle = Bundle().apply {
+                    putString("receiverUid", freelancerItem.uid)
+                    putString("receiverName", freelancerItem.name)
+                    putString("receiverImage", freelancerItem.profileImageUrl)
+                }
+                findNavController().navigate(R.id.chatlist, bundle)
             }
         )
         binding.recyclerresults.apply {
-            adapter=freeadapter
-            layoutManager=LinearLayoutManager(requireContext())
-
-
-
+            adapter = freeadapter
+            layoutManager = LinearLayoutManager(requireContext())
         }
-
     }
+
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment FreeLanceSearch.
-         */
-        // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
             FreeLanceSearch().apply {
@@ -201,10 +177,8 @@ class FreeLanceSearch : Fragment() {
     }
 
     override fun onDestroyView() {
-        binding.shimmerLayout.stopShimmer()
+        _binding?.shimmerLayout?.stopShimmer()
         _binding = null
         super.onDestroyView()
-
-
     }
 }

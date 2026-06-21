@@ -156,6 +156,7 @@ class HomeFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        if (_binding == null) return
         binding.etsearchbar.text?.clear()
         toggleSearch(false)
     }
@@ -278,6 +279,7 @@ class HomeFragment : Fragment() {
                 val bundle = Bundle().apply {
                     putString("uid", FreelancerItem.uid)
                 }
+                if (!isAdded) return@FreelanceAdapter
                 findNavController().navigate(
                     R.id.chatlist,
                     bundle
@@ -292,6 +294,7 @@ class HomeFragment : Fragment() {
             val bundle= Bundle().apply {
                 putString("categoryprimskill",onclicked.title)
             }
+            if (!isAdded) return@ServiceAdapter
                 findNavController().navigate(
                     R.id.freelancesearch,bundle
                 )
@@ -364,6 +367,7 @@ class HomeFragment : Fragment() {
 
         db.collection("Freelancers").get()
             .addOnSuccessListener { freelancerDocs ->
+                if (_binding == null) return@addOnSuccessListener
                 val freelancerList = mutableListOf<FreelancerItem>()
 
                 if (freelancerDocs.isEmpty) {
@@ -387,6 +391,7 @@ class HomeFragment : Fragment() {
 
                     db.collection("Users").document(doc.id).get()
                         .addOnSuccessListener { userDoc ->
+                            if (_binding == null) return@addOnSuccessListener
                             freelancer.profileImageUrl = userDoc.getString("profilePictureUrl") ?: ""
                             freelancerList.add(freelancer)
 

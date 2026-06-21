@@ -2,8 +2,6 @@ package com.nikhil.buyerapp.freelanceprofileview
 
 import com.nikhil.buyerapp.databinding.FragmentReviewBinding
 
-
-
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -25,18 +23,15 @@ import java.util.Date
 class ReviewFragment : Fragment() {
 
     private var _binding: FragmentReviewBinding? = null
-
     private val binding get() = _binding!!
 
     private val db = Firebase.firestore
-
     private val auth = FirebaseAuth.getInstance()
 
     private var clientUid: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         clientUid = arguments?.getString("uid")
     }
 
@@ -45,56 +40,33 @@ class ReviewFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
-        _binding = FragmentReviewBinding.inflate(
-            inflater,
-            container,
-            false
-        )
-
+        _binding = FragmentReviewBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         setupCharCounter()
 
         binding.imgbt.setOnClickListener {
-
-            findNavController().popBackStack()
+            if (isAdded) findNavController().popBackStack()
         }
 
         binding.btnsave.setOnClickListener {
-            loge(clientUid!!)
+            loge(clientUid ?: "null")
             submitReview()
         }
     }
 
     private fun setupCharCounter() {
-
         binding.etReview.addTextChangedListener(
             object : TextWatcher {
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
-                override fun beforeTextChanged(
-                    s: CharSequence?,
-                    start: Int,
-                    count: Int,
-                    after: Int
-                ) {}
-
-                override fun onTextChanged(
-                    s: CharSequence?,
-                    start: Int,
-                    before: Int,
-                    count: Int
-                ) {
-
-                    binding.tvCharCount.text =
-                        "${s?.length ?: 0}/300"
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                    if (_binding == null) return
+                    binding.tvCharCount.text = "${s?.length ?: 0}/300"
                 }
 
                 override fun afterTextChanged(s: Editable?) {}
@@ -102,40 +74,33 @@ class ReviewFragment : Fragment() {
         )
     }
 
+    private fun showToast(message: String, long: Boolean = false) {
+        if (!isAdded || _binding == null) return
+        Toast.makeText(
+            requireContext(),
+            message,
+            if (long) Toast.LENGTH_LONG else Toast.LENGTH_SHORT
+        ).show()
+    }
+
     private fun submitReview() {
 
-        val reviewerUid =
-            auth.currentUser?.uid ?: return
+        if (!isAdded || _binding == null) return
 
-        val targetClientUid =
-            clientUid ?: return
+        val reviewerUid = auth.currentUser?.uid ?: return
+        val targetClientUid = clientUid ?: return
 
-        val rating =
-            binding.ratingBar.rating.toInt()
-
-        val reviewText =
-            binding.etReview.text.toString().trim()
+        val rating = binding.ratingBar.rating.toInt()
+        val reviewText = binding.etReview.text.toString().trim()
 
         // VALIDATION
         if (rating == 0) {
-
-            Toast.makeText(
-                requireContext(),
-                "Please select rating",
-                Toast.LENGTH_SHORT
-            ).show()
-
+            showToast("Please select rating")
             return
         }
 
         if (reviewText.isEmpty()) {
-
-            Toast.makeText(
-                requireContext(),
-                "Please write review",
-                Toast.LENGTH_SHORT
-            ).show()
-
+            showToast("Please write review")
             return
         }
 
@@ -145,28 +110,25 @@ class ReviewFragment : Fragment() {
             .get()
             .addOnSuccessListener { userDoc ->
 
-                val reviewerName =
-                    userDoc.getString("fullName")
-                        ?: "Anonymous"
+                if (!isAdded || _binding == null) {
+                    return@addOnSuccessListener
+                }
+
+                val reviewerName = userDoc.getString("fullName") ?: "Anonymous"
 
                 val review = Review(
-
                     reviewerUid = reviewerUid,
-
                     reviewerName = reviewerName,
-
                     rating = rating,
-
                     reviewText = reviewText,
-
                     timestamp = Timestamp(Date())
                 )
 
-                saveReview(
-                    targetClientUid,
-                    review,
-                    rating.toDouble()
-                )
+                saveReview(targetClientUid, review, rating.toDouble())
+            }
+            .addOnFailureListener { e ->
+                loge("REVIEW_ERROR", e)
+                showToast(e.localizedMessage ?: "Failed to fetch user info", long = true)
             }
     }
 
@@ -176,71 +138,48 @@ class ReviewFragment : Fragment() {
         newRating: Double
     ) {
 
-        val clientRef =
-            db.collection("Freelancers")
-                .document(clientUid)
+        val clientRef = db.collection("Freelancers").document(clientUid)
 
         db.runTransaction { transaction ->
 
-            val snapshot =
-                transaction.get(clientRef)
+            val snapshot = transaction.get(clientRef)
 
-            val oldRating =
-                snapshot.getDouble("rating") ?: 0.0
+            val oldRating = snapshot.getDouble("rating") ?: 0.0
 
-            val oldReviews =
-                snapshot.get("reviews")
-                        as? List<*>
-                    ?: emptyList<Any>()
+            val oldReviews = snapshot.get("reviews") as? List<*> ?: emptyList<Any>()
 
-            val reviewCount =
-                oldReviews.size
+            val reviewCount = oldReviews.size
 
-            // NEW AVERAGE
             val updatedRating =
-                (
-                        (oldRating * reviewCount)
-                                + newRating
-                        ) / (reviewCount + 1)
+                ((oldRating * reviewCount) + newRating) / (reviewCount + 1)
 
             transaction.update(
                 clientRef,
                 mapOf(
-
-                    "reviews" to
-                            FieldValue.arrayUnion(review),
-
-                    "rating" to
-                            updatedRating
+                    "reviews" to FieldValue.arrayUnion(review),
+                    "rating" to updatedRating
                 )
             )
         }
             .addOnSuccessListener {
 
-                Toast.makeText(
-                    requireContext(),
-                    "Review submitted",
-                    Toast.LENGTH_SHORT
-                ).show()
+                if (!isAdded || _binding == null) return@addOnSuccessListener
 
+                showToast("Review submitted")
                 findNavController().popBackStack()
             }
-
-            .addOnFailureListener {e->
+            .addOnFailureListener { e ->
 
                 loge("REVIEW_ERROR", e)
 
-                Toast.makeText(
-                    requireContext(),
-                    e.localizedMessage ?: "Failed to submit review",
-                    Toast.LENGTH_LONG
-                ).show()
+                if (!isAdded || _binding == null) return@addOnFailureListener
+
+                showToast(e.localizedMessage ?: "Failed to submit review", long = true)
             }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-
         _binding = null
     }
 }

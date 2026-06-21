@@ -15,6 +15,7 @@ import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.firestore
 import com.nikhil.buyerapp.R
 import com.nikhil.buyerapp.databinding.FragmentChatInterfaceBinding
@@ -37,6 +38,7 @@ class ChatInterface : Fragment() {
     lateinit var receiverUid:String
     lateinit var receiverName:String
     lateinit var receiverImage:String
+    private var messagesListener: ListenerRegistration? = null
     lateinit var chatAdapter: ChatAdapter
     val db= Firebase.firestore
     var auth: FirebaseAuth = FirebaseAuth.getInstance()
@@ -152,7 +154,7 @@ class ChatInterface : Fragment() {
             "${receiverUid}_${currentUid}"
         }
 
-        db.collection("Chat")
+        messagesListener = db.collection("Chat")
             .document(chatId)
             .collection("messages")
             .orderBy("timestamp")
@@ -169,10 +171,12 @@ class ChatInterface : Fragment() {
                     it.toObject(Message::class.java)
 
                 } ?: emptyList()
+                if (_binding == null) return@addSnapshotListener
 
                 chatAdapter.submitList(messages)
-
-                binding.chatRecyclerView.scrollToPosition(messages.size - 1)
+                if (messages.isNotEmpty()) {
+                    binding.chatRecyclerView.scrollToPosition(messages.lastIndex)
+                }
             }
     }
     private fun setupinfo()
@@ -219,13 +223,14 @@ class ChatInterface : Fragment() {
             }
 
             .addOnSuccessListener {
+                if(_binding==null) return@addOnSuccessListener
 
                 binding.etMessage.text?.clear()
 
             }
 
             .addOnFailureListener {
-
+                if(_binding==null) return@addOnFailureListener
                 snack("Failed to send message")
 
             }
@@ -252,5 +257,12 @@ class ChatInterface : Fragment() {
                     putString(ARG_PARAM2, param2)
                 }
             }
+    }
+
+    override fun onDestroyView() {
+        messagesListener?.remove()
+        messagesListener = null
+        _binding = null
+        super.onDestroyView()
     }
 }

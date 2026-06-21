@@ -16,11 +16,9 @@ import com.nikhil.buyerapp.utils.snack
 class EditProfileFragment : Fragment() {
 
     private var _binding: FragmentEditProfileBinding? = null
-
     private val binding get() = _binding!!
 
     private val db = Firebase.firestore
-
     private val auth = FirebaseAuth.getInstance()
 
     override fun onCreateView(
@@ -28,33 +26,23 @@ class EditProfileFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
-        _binding =
-            FragmentEditProfileBinding.inflate(
-                inflater,
-                container,
-                false
-            )
-
+        _binding = FragmentEditProfileBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         loadProfile()
 
         binding.btnSave.setOnClickListener {
-
             saveProfile()
         }
 
         binding.imgbt.setOnClickListener {
-
-            requireActivity().onBackPressedDispatcher.onBackPressed()
+            if (isAdded) {
+                requireActivity().onBackPressedDispatcher.onBackPressed()
+            }
         }
     }
 
@@ -68,24 +56,20 @@ class EditProfileFragment : Fragment() {
             .get()
             .addOnSuccessListener { document ->
 
-                val user =
-                    document.toObject(User::class.java)
+                if (_binding == null || !isAdded) {
+                    return@addOnSuccessListener
+                }
 
-                binding.etname.setText(
-                    user?.fullName ?: ""
-                )
+                val user = document.toObject(User::class.java)
 
-                binding.etPhone.setText(
-                    user?.phoneNumber ?: ""
-                )
-
-                binding.etemail.setText(
-                    user?.email ?: ""
-                )
-
-                binding.etdesc.setText(
-                    user?.bio ?: ""
-                )
+                binding.etname.setText(user?.fullName ?: "")
+                binding.etPhone.setText(user?.phoneNumber ?: "")
+                binding.etemail.setText(user?.email ?: "")
+                binding.etdesc.setText(user?.bio ?: "")
+            }
+            .addOnFailureListener {
+                if (_binding == null || !isAdded) return@addOnFailureListener
+                snack("Failed to load profile")
             }
 
         // CLIENT COLLECTION
@@ -94,12 +78,17 @@ class EditProfileFragment : Fragment() {
             .get()
             .addOnSuccessListener { document ->
 
-                val client =
-                    document.toObject(Client::class.java)
+                if (_binding == null || !isAdded) {
+                    return@addOnSuccessListener
+                }
 
-                binding.etprim.setText(
-                    client?.companyName ?: ""
-                )
+                val client = document.toObject(Client::class.java)
+
+                binding.etprim.setText(client?.companyName ?: "")
+            }
+            .addOnFailureListener {
+                if (_binding == null || !isAdded) return@addOnFailureListener
+                snack("Failed to load company info")
             }
     }
 
@@ -107,46 +96,45 @@ class EditProfileFragment : Fragment() {
 
         val uid = auth.currentUser?.uid ?: return
 
-        val fullName =
-            binding.etname.text.toString().trim()
+        val fullName = binding.etname.text.toString().trim()
+        val bio = binding.etdesc.text.toString().trim()
+        val companyName = binding.etprim.text.toString().trim()
 
-        val bio =
-            binding.etdesc.text.toString().trim()
+        binding.btnSave.isEnabled = false
 
-        val companyName =
-            binding.etprim.text.toString().trim()
+        // ATOMIC WRITE: both updates succeed or both fail, no partial save
+        val userRef = db.collection("Users").document(uid)
+        val clientRef = db.collection("Client").document(uid)
 
-        // UPDATE USERS COLLECTION
-        db.collection("Users")
-            .document(uid)
-            .update(
+        db.runBatch { batch ->
+            batch.update(
+                userRef,
                 mapOf(
                     "fullName" to fullName,
                     "bio" to bio
                 )
             )
-
-        // UPDATE CLIENT COLLECTION
-        db.collection("Client")
-            .document(uid)
-            .update(
+            batch.update(
+                clientRef,
                 mapOf(
                     "companyName" to companyName
                 )
             )
+        }
             .addOnSuccessListener {
-
+                if (_binding == null || !isAdded) return@addOnSuccessListener
+                binding.btnSave.isEnabled = true
                 snack("Profile Updated")
             }
             .addOnFailureListener {
-
+                if (_binding == null || !isAdded) return@addOnFailureListener
+                binding.btnSave.isEnabled = true
                 snack("Failed to update profile")
             }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-
         _binding = null
     }
 }

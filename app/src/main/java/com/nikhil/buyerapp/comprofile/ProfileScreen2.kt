@@ -98,7 +98,7 @@ class ProfileScreen2 : AppCompatActivity() {
                 "language" to selected,
                 "profilecomplete" to true,
                 "approved" to false,
-                "security" to code
+                "approvalCode" to code
             )
             val uid = auth.currentUser?.uid
 

@@ -119,9 +119,22 @@ class CoreProfileFragment : Fragment() {
         }
     }
 
+    // ─── Toast helper ───────────────────────────────────────────────────────
+
+    private fun safeToast(message: String, long: Boolean = false) {
+        if (!isAdded) return
+        Toast.makeText(
+            requireContext(),
+            message,
+            if (long) Toast.LENGTH_LONG else Toast.LENGTH_SHORT
+        ).show()
+    }
+
     // ─── Settings ────────────────────────────────────────────────────────────
 
     private fun showSettingsDialog() {
+        if (!isAdded) return
+
         val dialogView = LayoutInflater.from(requireContext())
             .inflate(R.layout.dialog_settings, null)
 
@@ -150,15 +163,18 @@ class CoreProfileFragment : Fragment() {
             dialog.dismiss()
             showDeleteConfirmationDialog()
         }
-        dialogView.findViewById<android.widget.LinearLayout>(R.id.rowContactSupport).setOnClickListener {
+
+        dialogView.findViewById<LinearLayout>(R.id.rowContactSupport).setOnClickListener {
             dialog.dismiss()
             showcontactDialog()
         }
 
         dialog.show()
     }
-    private fun showcontactDialog()
-    {
+
+    private fun showcontactDialog() {
+        if (!isAdded) return
+
         val intent = Intent(Intent.ACTION_SENDTO).apply {
             data = Uri.parse("mailto:support.skillvedika@gmail.com")
             putExtra(Intent.EXTRA_SUBJECT, "Skill Vedika Support")
@@ -166,10 +182,9 @@ class CoreProfileFragment : Fragment() {
         try {
             startActivity(intent)
         } catch (e: ActivityNotFoundException) {
-            Toast.makeText(requireContext(), "No email app found. Contact us at support.skillvedika@gmail.com", Toast.LENGTH_LONG).show()
+            safeToast("No email app found. Contact us at support.skillvedika@gmail.com", long = true)
         }
     }
-
 
     private fun logout() {
         auth.signOut()
@@ -177,6 +192,8 @@ class CoreProfileFragment : Fragment() {
     }
 
     private fun showDeleteConfirmationDialog() {
+        if (!isAdded) return
+
         val dialogView = LayoutInflater.from(requireContext())
             .inflate(R.layout.dialog_delete_confirm, null)
 
@@ -205,7 +222,7 @@ class CoreProfileFragment : Fragment() {
             .setOnClickListener {
                 val password = etPassword.text.toString().trim()
                 if (password.isEmpty()) {
-                    Toast.makeText(requireContext(), "Enter your password", Toast.LENGTH_SHORT).show()
+                    safeToast("Enter your password")
                     return@setOnClickListener
                 }
                 dialog.dismiss()
@@ -217,17 +234,17 @@ class CoreProfileFragment : Fragment() {
 
     private fun deleteAccountCascade(password: String) {
         val currentUid = uid ?: run {
-            Toast.makeText(requireContext(), "Not signed in", Toast.LENGTH_SHORT).show()
+            safeToast("Not signed in")
             return
         }
 
         val currentUser = auth.currentUser ?: run {
-            Toast.makeText(requireContext(), "Not signed in", Toast.LENGTH_SHORT).show()
+            safeToast("Not signed in")
             return
         }
 
         val email = currentUser.email ?: run {
-            Toast.makeText(requireContext(), "Email not found", Toast.LENGTH_SHORT).show()
+            safeToast("Email not found")
             return
         }
 
@@ -288,24 +305,28 @@ class CoreProfileFragment : Fragment() {
                 currentUser.delete().await()
 
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "Account deleted successfully", Toast.LENGTH_SHORT).show()
+                    if (!isAdded) return@withContext
+                    safeToast("Account deleted successfully")
                     navigateToLogin()
                 }
 
             } catch (e: com.google.firebase.auth.FirebaseAuthInvalidCredentialsException) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "Wrong password. Account not deleted.", Toast.LENGTH_LONG).show()
+                    if (!isAdded) return@withContext
+                    safeToast("Wrong password. Account not deleted.", long = true)
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     Log.e("DeleteAccount", "Cascade delete failed: ${e.message}")
-                    Toast.makeText(requireContext(), "Failed: ${e.message}", Toast.LENGTH_LONG).show()
+                    if (!isAdded) return@withContext
+                    safeToast("Failed: ${e.message}", long = true)
                 }
             }
         }
     }
 
     private fun navigateToLogin() {
+        if (!isAdded) return
         val intent = Intent(requireContext(), LoginActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
@@ -316,6 +337,8 @@ class CoreProfileFragment : Fragment() {
     // ─── Payment Methods ──────────────────────────────────────────────────────
 
     private fun showPaymentMethodsDialog() {
+        if (!isAdded) return
+
         val checkedItems = BooleanArray(paymentMethods.size) { i ->
             selectedPayments.contains(paymentMethods[i])
         }
@@ -340,9 +363,15 @@ class CoreProfileFragment : Fragment() {
         db.collection("Client")
             .document(currentUid)
             .update("paymentMethods", selectedPayments)
+            .addOnFailureListener { e ->
+                Log.e("SavePayment", "Failed to update payment methods: ${e.message}")
+                safeToast("Failed to save payment methods")
+            }
     }
 
     private fun updatePaymentChips() {
+        if (_binding == null) return
+
         binding.chipPaymentMethods.removeAllViews()
 
         if (selectedPayments.isEmpty()) {
@@ -375,6 +404,7 @@ class CoreProfileFragment : Fragment() {
         db.collection("Users").document(uid)
             .addSnapshotListener { snapshot, error ->
                 val b = _binding ?: return@addSnapshotListener
+                if (!isAdded) return@addSnapshotListener
                 if (error != null || snapshot == null || !snapshot.exists()) return@addSnapshotListener
 
                 val user = snapshot.toObject<User>()
@@ -393,6 +423,7 @@ class CoreProfileFragment : Fragment() {
         db.collection("Client").document(uid)
             .addSnapshotListener { snapshot, error ->
                 val b = _binding ?: return@addSnapshotListener
+                if (!isAdded) return@addSnapshotListener
                 if (error != null || snapshot == null || !snapshot.exists()) return@addSnapshotListener
 
                 val user = snapshot.toObject<Client>()
@@ -445,10 +476,12 @@ class CoreProfileFragment : Fragment() {
     }
 
     private fun uploadImageToSupabase(uri: Uri) {
+        if (_binding == null || !isAdded) return
+
         val byteArray = uriToByteArray(requireContext(), uri)
 
         if (byteArray.size > 5 * 1024 * 1024) {
-            Toast.makeText(requireContext(), "Image must be under 5 MB", Toast.LENGTH_SHORT).show()
+            safeToast("Image must be under 5 MB")
             return
         }
 
@@ -460,6 +493,7 @@ class CoreProfileFragment : Fragment() {
             try {
                 bucket.uploadAsFlow(fileName, byteArray).collect { status ->
                     withContext(Dispatchers.Main) {
+                        if (_binding == null || !isAdded) return@withContext
                         when (status) {
                             is UploadStatus.Progress -> Log.d("Upload", "In progress...")
                             is UploadStatus.Success -> {
@@ -471,32 +505,38 @@ class CoreProfileFragment : Fragment() {
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    binding.btnEditPhoto.isEnabled = true
                     Log.e("Upload", "Error: ${e.message}")
+                    if (_binding == null || !isAdded) return@withContext
+                    binding.btnEditPhoto.isEnabled = true
+                    safeToast("Upload failed: ${e.message}")
                 }
             }
         }
     }
 
     private fun handleUploadSuccess(fileName: String) {
+        if (_binding == null || !isAdded) return
+
         try {
             val imageUrl = supabaseClient.storage.from("sample").publicUrl(fileName)
             val currentUser = auth.currentUser ?: run {
-                Toast.makeText(requireContext(), "User authentication error", Toast.LENGTH_SHORT).show()
+                safeToast("User authentication error")
                 return
             }
 
             db.collection("Users").document(currentUser.uid)
                 .update("profilePictureUrl", imageUrl)
                 .addOnSuccessListener {
-                    Toast.makeText(requireContext(), "Profile image updated!", Toast.LENGTH_SHORT).show()
+                    if (_binding == null || !isAdded) return@addOnSuccessListener
+                    safeToast("Profile image updated!")
                     Glide.with(this)
                         .load(imageUrl)
                         .error(R.drawable.ic_launcher_background)
                         .into(binding.profileImage)
                 }
                 .addOnFailureListener { e ->
-                    Toast.makeText(requireContext(), "Failed to update image: ${e.message}", Toast.LENGTH_SHORT).show()
+                    if (!isAdded) return@addOnFailureListener
+                    safeToast("Failed to update image: ${e.message}")
                 }
         } catch (e: Exception) {
             Log.e("ProfileFragment", "handleUploadSuccess error: ${e.message}")

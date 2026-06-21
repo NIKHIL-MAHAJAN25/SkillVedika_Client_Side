@@ -85,7 +85,7 @@ class ChatFragment : Fragment() {
     private fun loadChats() {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
-        Firebase.firestore.collection("Chat")
+        chatsListener = Firebase.firestore.collection("Chat")
             .whereArrayContains("participants", uid)
 
             .addSnapshotListener { value, error ->
@@ -131,6 +131,7 @@ class ChatFragment : Fragment() {
                                 userMap[otherUserId] = Pair(name, image)
                                 pending--
                                 if (pending == 0) {
+                                    if (_binding == null) return@addOnSuccessListener
                                     adapter.setUserInfo(userMap)
                                     adapter.submitList(ArrayList(chats))
                                     _binding?.let {

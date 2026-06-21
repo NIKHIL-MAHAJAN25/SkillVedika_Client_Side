@@ -12,37 +12,31 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.DocumentId
-import com.google.firebase.firestore.ServerTimestamp
 import com.google.firebase.firestore.firestore
-import com.nikhil.buyerapp.R
 import com.nikhil.buyerapp.databinding.FragmentAddProjectBinding
 import com.nikhil.buyerapp.dataclasses.ProjectStatus
+import com.nikhil.buyerapp.R
 import com.nikhil.buyerapp.utils.UserUtils
 import com.nikhil.buyerapp.utils.snack
 import com.nikhil.sellerapp.skills.SkillData
 import kotlinx.coroutines.launch
-import java.sql.Timestamp
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [AddProjectFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class AddProjectFragment : Fragment() {
-    private var _binding:FragmentAddProjectBinding?=null
-    private val binding get()=_binding!!
+
+    private var _binding: FragmentAddProjectBinding? = null
+    private val binding get() = _binding!!
+
     private val selectedSkillsList = mutableListOf<String>()
     private var currentAvailableSkills: List<String> = emptyList()
     private var clientName: String = "Loading..."
-    private val db=Firebase.firestore
-    private val auth:FirebaseAuth=FirebaseAuth.getInstance()
-    val uid=auth.currentUser?.uid
+
+    private val db = Firebase.firestore
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    val uid = auth.currentUser?.uid
+
     private var param1: String? = null
     private var param2: String? = null
 
@@ -57,22 +51,27 @@ class AddProjectFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        _binding=FragmentAddProjectBinding.inflate(inflater,container,false)
+    ): View {
+        _binding = FragmentAddProjectBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         lifecycleScope.launch {
-            // This one line does all the heavy lifting
-            clientName = UserUtils.fetchCurrentUserName()
+            val name = UserUtils.fetchCurrentUserName()
+            if (_binding == null || !isAdded) return@launch
+            clientName = name
         }
+
         setupCategoryDropdown()
         setupSkillButton()
+
         binding.btnPostJob.setOnClickListener {
             savejob()
         }
+
         // Auto-clear errors on input
         listOf(
             binding.layoutTitle to binding.etTitle,
@@ -80,37 +79,21 @@ class AddProjectFragment : Fragment() {
             binding.layoutDesc to binding.etDesc
         ).forEach { (layout, editText) ->
             editText.addTextChangedListener(object : android.text.TextWatcher {
-                override fun afterTextChanged(s: android.text.Editable?) { layout.error = null }
+                override fun afterTextChanged(s: android.text.Editable?) {
+                    if (_binding == null) return
+                    layout.error = null
+                }
                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             })
         }
-        // Clear category error on selection
-        binding.etCategory.setOnItemClickListener { parent, view, position, id ->
-            binding.layoutCategory.error = null
-            // re-call your existing category logic below too
-            val selectedCategoryName = (binding.etCategory.adapter.getItem(position) as String)
-            val categoryObj = SkillData.getSkillCategories().find { it.categoryName == selectedCategoryName }
-            if (categoryObj != null) {
-                currentAvailableSkills = categoryObj.skills
-                selectedSkillsList.clear()
-                binding.chipGroupSkills.removeAllViews()
-                binding.btnAddSkill.isEnabled = true
-            }
-        }
+
+        // NOTE: category selection logic lives in setupCategoryDropdown() only.
+        // (Previously duplicated here — the duplicate listener silently overwrote
+        // setupCategoryDropdown()'s, so it was removed rather than kept as dead code.)
     }
 
-
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment AddProjectFragment.
-         */
-        // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
             AddProjectFragment().apply {
@@ -120,26 +103,19 @@ class AddProjectFragment : Fragment() {
                 }
             }
     }
-//    @DocumentId
-//    val projectid:String="",
 
+    private fun savejob() {
 
+        if (_binding == null) return
 
-
-
-
-
-
-    private fun savejob()
-    {
-        val projtitle=binding.etTitle.text.toString()
-        val cat=binding.etCategory.text.toString()
-        val clientuid=uid
-        val clientname=clientName
-        val desc=binding.etDesc.text.toString()
+        val projtitle = binding.etTitle.text.toString()
+        val cat = binding.etCategory.text.toString()
+        val clientuid = uid
+        val clientname = clientName
+        val desc = binding.etDesc.text.toString()
         val budgetStr = binding.etBudget.text.toString().trim()
         val budget = budgetStr.toDoubleOrNull() ?: 0.0
-        // Clear previous errors
+
         binding.layoutTitle.error = null
         binding.layoutCategory.error = null
         binding.layoutBudget.error = null
@@ -193,12 +169,11 @@ class AddProjectFragment : Fragment() {
             }
         }
 
-        if (selectedSkillsList.isEmpty()) {
-            snack("Please select at least one skill")
-            return
-        }
+        // (Removed redundant unreachable `if (selectedSkillsList.isEmpty())` check —
+        // already handled inside the `when` above.)
+
         val newProjectId = db.collection("Projects").document().id
-        val new= mapOf(
+        val new = mapOf(
             "projectid" to newProjectId,
             "clientuid" to clientuid,
             "clientName" to clientname,
@@ -208,72 +183,63 @@ class AddProjectFragment : Fragment() {
             "budget" to budget,
             "requiredSkills" to selectedSkillsList,
             "category" to cat,
+        )
 
-            )
         binding.btnPostJob.isEnabled = false
-        db.collection("Projects").document(newProjectId).set(new).addOnSuccessListener {
-            snack("Job posted")
-            findNavController().navigateUp()
-        }.addOnFailureListener { e->
-            binding.btnPostJob.isEnabled=true
-            snack("Error:${e.message}")
 
-        }
-
-
+        db.collection("Projects").document(newProjectId).set(new)
+            .addOnSuccessListener {
+                if (_binding == null || !isAdded) return@addOnSuccessListener
+                snack("Job posted")
+                findNavController().navigateUp()
+            }
+            .addOnFailureListener { e ->
+                if (_binding == null) return@addOnFailureListener
+                binding.btnPostJob.isEnabled = true
+                snack("Error:${e.message}")
+            }
     }
+
     private fun setupCategoryDropdown() {
-        // A. Get List of Categories from your Object
         val categories = SkillData.getSkillCategories().map { it.categoryName }
 
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, categories)
         binding.etCategory.setAdapter(adapter)
 
-        // B. Listen for Selection
         binding.etCategory.setOnItemClickListener { _, _, position, _ ->
-            val selectedCategoryName = adapter.getItem(position)
+            if (_binding == null) return@setOnItemClickListener
 
-            // C. Find the matching skills from your Object
+            binding.layoutCategory.error = null
+
+            val selectedCategoryName = adapter.getItem(position)
             val categoryObj = SkillData.getSkillCategories().find { it.categoryName == selectedCategoryName }
 
             if (categoryObj != null) {
-                // Update the available list
                 currentAvailableSkills = categoryObj.skills
-
-                // Clear previous selections if category changes
                 selectedSkillsList.clear()
                 binding.chipGroupSkills.removeAllViews()
-
-                // Enable the Add button
                 binding.btnAddSkill.isEnabled = true
             }
         }
     }
 
     private fun setupSkillButton() {
-        binding.btnAddSkill.isEnabled = false // Disable until category picked
+        binding.btnAddSkill.isEnabled = false
 
         binding.btnAddSkill.setOnClickListener {
             if (currentAvailableSkills.isEmpty()) return@setOnClickListener
 
-            // Convert list to Array for the Dialog
             val skillsArray = currentAvailableSkills.toTypedArray()
             val checkedItems = BooleanArray(skillsArray.size) { false }
 
-            // Show Multi-Select Dialog
-            MaterialAlertDialogBuilder(requireContext(),R.style.CustomMaterialDialog)
+            MaterialAlertDialogBuilder(requireContext(), R.style.CustomMaterialDialog)
                 .setTitle("Select Required Skills")
-                .setMultiChoiceItems(skillsArray, checkedItems) { dialog, which, isChecked ->
-                    // You can handle realtime checks here if needed
-                }
+                .setMultiChoiceItems(skillsArray, checkedItems) { _, _, _ -> }
                 .setPositiveButton("Add") { dialog, _ ->
-                    // 1. Loop through the ListView of the dialog to find checked items
                     val listView = (dialog as androidx.appcompat.app.AlertDialog).listView
-
                     for (i in 0 until listView.count) {
                         if (listView.isItemChecked(i)) {
-                            val skill = skillsArray[i]
-                            addSkillChip(skill)
+                            addSkillChip(skillsArray[i])
                         }
                     }
                 }
@@ -282,20 +248,26 @@ class AddProjectFragment : Fragment() {
         }
     }
 
-    // HELPER: Add a visual Chip
     private fun addSkillChip(skillName: String) {
-        if (selectedSkillsList.contains(skillName)) return // Don't add duplicates
+        if (_binding == null) return
+        if (selectedSkillsList.contains(skillName)) return
 
         selectedSkillsList.add(skillName)
 
         val chip = Chip(requireContext())
         chip.text = skillName
-        chip.isCloseIconVisible = true // Allow user to remove it
+        chip.isCloseIconVisible = true
         chip.setOnCloseIconClickListener {
+            if (_binding == null) return@setOnCloseIconClickListener
             binding.chipGroupSkills.removeView(chip)
             selectedSkillsList.remove(skillName)
         }
 
         binding.chipGroupSkills.addView(chip)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

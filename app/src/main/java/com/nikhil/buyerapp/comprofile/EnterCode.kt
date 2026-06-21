@@ -10,6 +10,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.android.material.snackbar.Snackbar
 import com.nikhil.buyerapp.R
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.Firebase
@@ -129,6 +130,7 @@ class   EnterCode : AppCompatActivity() {
                         startActivity(Intent(this,hosthome::class.java))
                     }
                     else{
+                        Snackbar.make(binding.root,"Invalid OTP", Snackbar.LENGTH_SHORT).show()
                         Log.d("otp", "Invalid OTP")
 
                     }
@@ -157,7 +159,7 @@ class   EnterCode : AppCompatActivity() {
 
             db.collection("Users").document(auid).get().addOnSuccessListener {document->
                 if(document!=null && document.exists()){
-                    val securecode=document.get("security")
+                    val securecode=document.get("approvalCode")
                     val securecode2 = securecode?.toString()
                     Log.d("code","Code:$securecode")
                     onResult(securecode2)

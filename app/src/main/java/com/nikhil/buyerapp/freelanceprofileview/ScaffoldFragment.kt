@@ -18,13 +18,8 @@ import com.nikhil.buyerapp.databinding.FragmentScaffoldBinding
 import com.nikhil.buyerapp.dataclasses.Freelancer
 import com.nikhil.buyerapp.dataclasses.User
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
-
-
-
 
 /**
  * A simple [Fragment] subclass.
@@ -32,19 +27,25 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class ScaffoldFragment : Fragment() {
-    // TODO: Rename and change types of parameters
+
     private var param1: String? = null
     private var param2: String? = null
-    private var _binding: FragmentScaffoldBinding?=null
-    private val binding get()=_binding!!
-    val db= Firebase.firestore
+
+    private var _binding: FragmentScaffoldBinding? = null
+    private val binding get() = _binding!!
+
+    val db = Firebase.firestore
     lateinit var uid: String
-    private val auth: FirebaseAuth=FirebaseAuth.getInstance()
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+
+    // Track each load independently; reveal real content only when both are done
+    private var userInfoLoaded = false
+    private var freelancerInfoLoaded = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        uid=arguments?.getString("uid")!!
-        Log.e("DEBUG","${uid}")
+        uid = arguments?.getString("uid") ?: ""
+        Log.e("DEBUG", uid)
         arguments?.let {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
@@ -54,43 +55,56 @@ class ScaffoldFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        _binding=FragmentScaffoldBinding.inflate(inflater,container,false)
+    ): View {
+        _binding = FragmentScaffoldBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        startShimmer()
+
         loadinfo()
         loadotherinfo()
 
-        binding.chipskills.setOnCheckedStateChangeListener{group,checkedIds->
-            val checkedId=checkedIds.firstOrNull()?:return@setOnCheckedStateChangeListener
+        binding.chipskills.setOnCheckedStateChangeListener { group, checkedIds ->
+            if (_binding == null || !isAdded) return@setOnCheckedStateChangeListener
+            val checkedId = checkedIds.firstOrNull() ?: return@setOnCheckedStateChangeListener
             when (checkedId) {
                 R.id.basichip -> replaceFragment(BasicFragment())
                 R.id.skills -> replaceFragment(SkillsFragment())
                 R.id.exp -> replaceFragment(ExperienceFragment())
             }
         }
+
         if (savedInstanceState == null) {
             binding.basichip.isChecked = true
         }
     }
 
+    private fun startShimmer() {
+        binding.shimmerLayout.startShimmer()
+        binding.shimmerLayout.visibility = View.VISIBLE
+        binding.profileImage.visibility = View.INVISIBLE
+        binding.tvname.visibility = View.INVISIBLE
+        binding.tvtitle.visibility = View.INVISIBLE
+        binding.tvrate.visibility = View.INVISIBLE
+    }
 
+    private fun checkAndRevealContent() {
+        if (_binding == null) return
+        if (!userInfoLoaded || !freelancerInfoLoaded) return
+
+        binding.shimmerLayout.stopShimmer()
+        binding.shimmerLayout.visibility = View.GONE
+        binding.profileImage.visibility = View.VISIBLE
+        binding.tvname.visibility = View.VISIBLE
+        binding.tvtitle.visibility = View.VISIBLE
+        binding.tvrate.visibility = View.VISIBLE
+    }
 
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ScaffoldFragment.
-         */
-        // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
             ScaffoldFragment().apply {
@@ -100,70 +114,83 @@ class ScaffoldFragment : Fragment() {
                 }
             }
     }
+
     private fun loadotherinfo() {
-        if (uid != null) {
-            db.collection("Freelancers").document(uid)
-                .addSnapshotListener { snapshot, error ->
-                    //Now what happens is we are getting npe exception ie firestore add on listener run asyncronoulsy and giving result even when fragment is destroyed so we make a local
-                    //copy of binding
-                    val b = _binding ?: return@addSnapshotListener
-                    if (error != null) {
-                        // Handle error, maybe log it
-                        return@addSnapshotListener
-                    }
-                    if (snapshot != null && snapshot.exists()) {
-                        val user = snapshot.toObject<Freelancer>()
-                        b.tvtitle.setText(user?.primaryskill)
-                        val rate = user?.projectRate ?: 0.0
-                        b.tvrate.text = "₹$rate/hour"
-                    }
+        if (uid.isEmpty()) return
+
+        db.collection("Freelancers").document(uid)
+            .addSnapshotListener { snapshot, error ->
+                // Local copy guards against the listener firing after the
+                // fragment's view is destroyed (async callback outliving onDestroyView)
+                val b = _binding ?: return@addSnapshotListener
+
+                if (!isAdded) return@addSnapshotListener
+
+                if (error != null) {
+                    Log.e("SCAFFOLD_ERROR", "Freelancer listener failed", error)
+                    freelancerInfoLoaded = true
+                    checkAndRevealContent()
+                    return@addSnapshotListener
                 }
-        }
-    }
-    private fun loadinfo(){
-        if(uid!=null){
-            db.collection("Users").document(uid)
-                .addSnapshotListener { snapshot,error->
-                    //Now what happens is we are getting npe exception ie firestore add on listener run asyncronoulsy and giving result even when fragment is destroyed so we make a local
-                    //copy of binding
-                    val b=_binding?:return@addSnapshotListener
-                    if (error != null) {
-                        // Handle error, maybe log it
-                        return@addSnapshotListener
-                    }
-                    if(snapshot != null && snapshot.exists()){
-                        val user=snapshot.toObject<User>()
-                        b.tvname.text=user?.fullName
-                        Glide.with(this@ScaffoldFragment)
-                            .load(user?.profilePictureUrl)
-                            .error(R.drawable.ic_launcher_background)
-                            .into(binding.profileImage)
 
-
-
-                    }
+                if (snapshot != null && snapshot.exists()) {
+                    val user = snapshot.toObject<Freelancer>()
+                    b.tvtitle.setText(user?.primaryskill)
+                    val rate = user?.projectRate ?: 0.0
+                    b.tvrate.text = "₹$rate/hour"
                 }
-        }
-    }
-        private fun replaceFragment(fragment: Fragment) {
-            fragment.arguments = Bundle().apply {
-                putString("uid", uid)
+
+                freelancerInfoLoaded = true
+                checkAndRevealContent()
             }
-            childFragmentManager.beginTransaction()
-                .replace(R.id.framelayout, fragment)
-                .commit()
-//            // 1. Get the specialized manager for nested fragments.
-//            val fragmentManager = childFragmentManager
-//            // 2. Start a transaction.
-//            val transaction = fragmentManager.beginTransaction()
-//            // 3. Replace the content of the container with the new fragment.
-//            transaction.replace(R.id.framelayout, fragment)
-//            // 4. Commit the transaction to make it happen.
-//            transaction.commit()
+    }
+
+    private fun loadinfo() {
+        if (uid.isEmpty()) return
+
+        db.collection("Users").document(uid)
+            .addSnapshotListener { snapshot, error ->
+                val b = _binding ?: return@addSnapshotListener
+
+                if (!isAdded) return@addSnapshotListener
+
+                if (error != null) {
+                    Log.e("SCAFFOLD_ERROR", "User listener failed", error)
+                    userInfoLoaded = true
+                    checkAndRevealContent()
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null && snapshot.exists()) {
+                    val user = snapshot.toObject<User>()
+                    b.tvname.text = user?.fullName
+
+                    Glide.with(this@ScaffoldFragment)
+                        .load(user?.profilePictureUrl)
+                        .error(R.drawable.ic_launcher_background)
+                        .into(b.profileImage)
+                }
+
+                userInfoLoaded = true
+                checkAndRevealContent()
+            }
+    }
+
+    private fun replaceFragment(fragment: Fragment) {
+        if (_binding == null || !isAdded) return
+
+        fragment.arguments = Bundle().apply {
+            putString("uid", uid)
         }
 
-        override fun onDestroyView() {
-            super.onDestroyView()
-            _binding = null
-        }
+        childFragmentManager.beginTransaction()
+            .replace(R.id.framelayout, fragment)
+            .commit()
     }
+
+    override fun onDestroyView() {
+        _binding?.shimmerLayout?.stopShimmer()
+        super.onDestroyView()
+        _binding = null
+    }
+}

@@ -146,6 +146,7 @@ class OrderFragment : Fragment() {
                 otherUids.forEach { otherUid ->
                     db.collection("Users").document(otherUid).get()
                         .addOnSuccessListener { userDoc ->
+                            if (_binding == null || !isAdded) return@addOnSuccessListener
                             val name = userDoc.getString("fullName") ?: "Unknown"
                             val email = userDoc.getString("email") ?: ""
                             val image = userDoc.getString("profilePictureUrl") ?: ""
@@ -227,9 +228,11 @@ class OrderFragment : Fragment() {
                 db.collection("Projects").document(project.projectid)
                     .update(updates)
                     .addOnSuccessListener {
+                        if (!isAdded) return@addOnSuccessListener
                         Toast.makeText(requireContext(), "Updated!", Toast.LENGTH_SHORT).show()
                     }
                     .addOnFailureListener { e ->
+                        if (!isAdded) return@addOnFailureListener
                         Log.e("UPDATE", "Failed", e)
                         Toast.makeText(requireContext(), "Failed to update", Toast.LENGTH_SHORT).show()
                     }
