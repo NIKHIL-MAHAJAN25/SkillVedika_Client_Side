@@ -277,7 +277,9 @@ class HomeFragment : Fragment() {
             },
             onContactClicked = { FreelancerItem ->
                 val bundle = Bundle().apply {
-                    putString("uid", FreelancerItem.uid)
+                    putString("receiverUid", FreelancerItem.uid)
+                    putString("receiverName", FreelancerItem.name)        // whatever the field is called
+                    putString("receiverImage", FreelancerItem.profileImageUrl)
                 }
                 if (!isAdded) return@FreelanceAdapter
                 findNavController().navigate(

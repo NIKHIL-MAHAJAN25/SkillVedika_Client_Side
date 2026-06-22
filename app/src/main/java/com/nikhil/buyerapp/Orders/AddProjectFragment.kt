@@ -6,6 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.chip.Chip
@@ -58,6 +60,13 @@ class AddProjectFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // Bottom input moves with keyboard
+        ViewCompat.setOnApplyWindowInsetsListener(binding.etDesc) { v, windowInsets ->
+            val imeInsets = windowInsets.getInsets(WindowInsetsCompat.Type.ime())
+            val systemBars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(v.paddingLeft, v.paddingTop, v.paddingRight, maxOf(imeInsets.bottom, systemBars.bottom))
+            windowInsets
+        }
 
         lifecycleScope.launch {
             val name = UserUtils.fetchCurrentUserName()
