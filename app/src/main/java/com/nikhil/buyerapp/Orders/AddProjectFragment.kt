@@ -20,7 +20,7 @@ import com.nikhil.buyerapp.dataclasses.ProjectStatus
 import com.nikhil.buyerapp.R
 import com.nikhil.buyerapp.utils.UserUtils
 import com.nikhil.buyerapp.utils.snack
-import com.nikhil.sellerapp.skills.SkillData
+import com.nikhil.buyerapp.skills.SkillData
 import kotlinx.coroutines.launch
 
 private const val ARG_PARAM1 = "param1"

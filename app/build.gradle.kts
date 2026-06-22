@@ -16,24 +16,39 @@ if (localPropertiesFile.exists()) { // <-- This check is missing
 android {
     namespace = "com.nikhil.buyerapp"
     compileSdk = 35
-
     defaultConfig {
-        buildConfigField("String", "SUPABASE_URL", "\"${localProperties.getProperty("SUPABASE_URL")}\"")
-        buildConfigField("String", "SUPABASE_KEY", "\"${localProperties.getProperty("SUPABASE_KEY")}\"")
-        buildConfigField("String","NEWS_KEY","\"${localProperties.getProperty("NEWS_KEY")}\"")
-        buildConfigField("String","GOOGLE_KEY","\"${localProperties.getProperty("GOOGLE_KEY")}\"")
-        applicationId = "com.nikhil.buyerapp"
-        minSdk = 24
-        targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+    applicationId = "com.nikhil.buyerapp"
+    minSdk = 24
+    targetSdk = 35
+    versionCode = 1
+    versionName = "1.0"
 
+
+
+
+        buildConfigField("String", "SUPABASE_URL", "\"${localProperties.getProperty("SUPABASE_URL")?:""}\"")
+        buildConfigField("String", "SUPABASE_KEY", "\"${localProperties.getProperty("SUPABASE_KEY")?:""}\"")
+        buildConfigField("String","NEWS_KEY","\"${localProperties.getProperty("NEWS_KEY")?:""}\"")
+        buildConfigField("String","GOOGLE_KEY","\"${localProperties.getProperty("GOOGLE_KEY")?:""}\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+    }
+    signingConfigs {
+        create("release") {
+            storeFile = file(localProperties.getProperty("KEYSTORE_PATH") ?: "")
+            storePassword = localProperties.getProperty("KEYSTORE_PASSWORD") ?: ""
+            keyAlias = localProperties.getProperty("KEY_ALIAS") ?: ""
+            keyPassword = localProperties.getProperty("KEY_PASSWORD") ?: ""
+        }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            isDebuggable = false
+            signingConfig = signingConfigs.getByName("release")
+
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -103,7 +118,7 @@ dependencies {
 
     // 6. GLIDE
     implementation("com.github.bumptech.glide:glide:4.15.1")
-    annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
+    kapt("com.github.bumptech.glide:compiler:4.15.1")
 
     // 7. ANDROID LIBS
     implementation("androidx.viewpager2:viewpager2:1.0.0")

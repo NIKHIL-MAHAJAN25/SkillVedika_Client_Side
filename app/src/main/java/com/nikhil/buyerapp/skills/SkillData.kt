@@ -1,4 +1,4 @@
-package com.nikhil.sellerapp.skills
+package com.nikhil.buyerapp.skills
 
 import com.nikhil.buyerapp.skills.SkillsCat
 

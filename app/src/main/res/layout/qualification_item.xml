@@ -70,7 +70,7 @@
                 android:textStyle="bold"
                 android:maxLines="2"
                 android:ellipsize="end"
-                app:layout_constraintEnd_toStartOf="@+id/btnMenu"
+
                 app:layout_constraintStart_toEndOf="@+id/iconContainer"
                 app:layout_constraintTop_toTopOf="@+id/iconContainer" />
 

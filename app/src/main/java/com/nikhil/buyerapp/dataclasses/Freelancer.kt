@@ -1,6 +1,7 @@
 package com.nikhil.buyerapp.dataclasses
 
-import com.nikhil.sellerapp.skills.Skill
+import com.nikhil.buyerapp.skills.Skill
+
 
 data class Freelancer(
     val uid: String="",

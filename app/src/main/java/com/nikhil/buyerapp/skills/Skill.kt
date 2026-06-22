@@ -1,4 +1,4 @@
-package com.nikhil.sellerapp.skills
+package com.nikhil.buyerapp.skills
 
 data class Skill(
     val name:String="",
