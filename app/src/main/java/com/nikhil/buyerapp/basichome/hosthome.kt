@@ -35,6 +35,7 @@ class hosthome : AppCompatActivity() {
     lateinit var binding: ActivityHosthomeBinding
     private val auth = FirebaseAuth.getInstance()
     private val db = Firebase.firestore
+    private var currentHint: TapTargetView? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        getSharedPreferences("hints", Context.MODE_PRIVATE).edit().clear().apply()
@@ -62,6 +63,8 @@ class hosthome : AppCompatActivity() {
 
         // 4. Listen for navigation changes
         navController.addOnDestinationChangedListener { _, destination, _ ->
+            currentHint?.dismiss(false)
+            currentHint = null
             when (destination.id) {
                 R.id.home,
                 R.id.chat,
@@ -73,7 +76,7 @@ class hosthome : AppCompatActivity() {
         val prefs = getSharedPreferences("hints", MODE_PRIVATE)
         binding.root.post {
             lifecycleScope.launch {
-                delay(3000)
+                delay(1500)
                 showHintsInSequence(prefs)
             }
         }
@@ -103,7 +106,7 @@ class hosthome : AppCompatActivity() {
     private fun showHomeHint(prefs: SharedPreferences, menu: ViewGroup) {
         val aiTarget = menu.getChildAt(0) ?: return  // index 3 = AI/Gemini
         prefs.edit().putBoolean("home_hint_shows", true).apply()
-        TapTargetView.showFor(
+        currentHint = TapTargetView.showFor(
             this@hosthome,
             TapTarget.forView(
                 aiTarget,
@@ -133,7 +136,7 @@ class hosthome : AppCompatActivity() {
     private fun showChatHint(prefs: SharedPreferences, menu: ViewGroup) {
         val aiTarget = menu.getChildAt(1) ?: return  // index 3 = AI/Gemini
         prefs.edit().putBoolean("chat_hint_shows", true).apply()
-        TapTargetView.showFor(
+        currentHint =TapTargetView.showFor(
             this@hosthome,
             TapTarget.forView(
                 aiTarget,
@@ -162,7 +165,7 @@ class hosthome : AppCompatActivity() {
     private fun showOrderHint(prefs: SharedPreferences, menu: ViewGroup) {
         val aiTarget = menu.getChildAt(2) ?: return  // index 3 = AI/Gemini
         prefs.edit().putBoolean("order_hint_shows", true).apply()
-        TapTargetView.showFor(
+        currentHint = TapTargetView.showFor(
             this@hosthome,
             TapTarget.forView(
                 aiTarget,
@@ -192,7 +195,7 @@ class hosthome : AppCompatActivity() {
     private fun showAiHint(prefs: SharedPreferences, menu: ViewGroup) {
         val aiTarget = menu.getChildAt(3) ?: return  // index 3 = AI/Gemini
         prefs.edit().putBoolean("ai_hint_shown", true).apply()
-        TapTargetView.showFor(
+        currentHint = TapTargetView.showFor(
             this@hosthome,
             TapTarget.forView(
                 aiTarget,
@@ -224,7 +227,7 @@ class hosthome : AppCompatActivity() {
         prefs.edit()
             .putBoolean("freelancer_full_profile_hint_shown", true)
             .apply()
-        TapTargetView.showFor(
+        currentHint =TapTargetView.showFor(
             this@hosthome,
             TapTarget.forView(
                 profileTarget,
