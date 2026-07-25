@@ -14,3 +14,11 @@
 .cxx
 local.properties
 google-services.json
+
+/app/release/
+*.apk
+*.aab
+*.dm
+
+
+/.idea/deviceManager.xml
